@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smartiza — Sua Confeitaria Online</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,sans-serif;color:#1a1a2e;background:#faf9f7;line-height:1.6}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    
+    /* Header */
+    header{background:#fff;border-bottom:1px solid #eee;position:sticky;top:0;z-index:100}
+    header .container{display:flex;justify-content:space-between;align-items:center;padding-top:16px;padding-bottom:16px}
+    .logo{font-size:1.4rem;font-weight:800;color:#B84A5A;letter-spacing:-0.5px}
+    .logo span{color:#8FD0B0}
+    header a{color:#B84A5A;text-decoration:none;font-weight:600;font-size:0.95rem;border:2px solid #B84A5A;padding:8px 20px;border-radius:999px;transition:all .2s}
+    header a:hover{background:#B84A5A;color:#fff}
+    
+    /* Hero */
+    .hero{padding:80px 0 60px;text-align:center;background:linear-gradient(135deg,#B84A5A 0%,#8FD0B0 100%);color:#fff}
+    .hero h1{font-size:2.8rem;font-weight:800;margin-bottom:16px;line-height:1.2}
+    .hero p{font-size:1.2rem;opacity:.9;max-width:600px;margin:0 auto 32px}
+    .hero .cta{display:inline-block;background:#fff;color:#B84A5A;padding:14px 36px;border-radius:999px;font-weight:700;font-size:1.05rem;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+    .hero .cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
+    
+    /* Sections */
+    section{padding:80px 0}
+    section h2{font-size:2rem;text-align:center;margin-bottom:48px;color:#1a1a2e}
+    .highlight{color:#B84A5A}
+    
+    /* Features grid */
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px}
+    .feature-card{background:#fff;padding:32px 28px;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center;transition:transform .2s}
+    .feature-card:hover{transform:translateY(-4px)}
+    .feature-card .icon{font-size:2.5rem;margin-bottom:16px}
+    .feature-card h3{font-size:1.15rem;margin-bottom:8px;color:#1a1a2e}
+    .feature-card p{color:#666;font-size:0.95rem}
+    
+    /* Steps */
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
+    .step{text-align:center;position:relative}
+    .step-num{width:48px;height:48px;background:#B84A5A;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;margin:0 auto 16px}
+    .step h4{font-size:1.05rem;margin-bottom:6px}
+    .step p{color:#666;font-size:0.9rem}
+    
+    /* Plans */
+    .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
+    .plan-card{background:#fff;padding:36px 28px;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center;border:2px solid transparent;transition:border-color .2s,transform .2s}
+    .plan-card:hover{transform:translateY(-4px)}
+    .plan-card.featured{border-color:#B84A5A}
+    .plan-card .plan-name{font-size:1.2rem;font-weight:700;margin-bottom:8px}
+    .plan-card .plan-price{font-size:2.5rem;font-weight:800;color:#B84A5A;margin-bottom:4px}
+    .plan-card .plan-period{color:#999;font-size:0.9rem;margin-bottom:20px}
+    .plan-card ul{list-style:none;text-align:left;margin-bottom:28px}
+    .plan-card li{padding:6px 0;color:#555;font-size:0.9rem}
+    .plan-card li::before{content:"✓ ";color:#8FD0B0;font-weight:700}
+    .plan-card .btn{display:inline-block;background:#B84A5A;color:#fff;padding:12px 32px;border-radius:999px;font-weight:700;text-decoration:none;transition:all .2s}
+    .plan-card .btn:hover{background:#9e3d4b}
+    
+    /* Demo stores */
+    .stores-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+    .store-preview{background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);text-align:center;text-decoration:none;color:#1a1a2e;transition:transform .2s,box-shadow .2s}
+    .store-preview:hover{transform:translateY(-3px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+    .store-preview .emoji{font-size:2rem;margin-bottom:8px}
+    .store-preview .name{font-weight:700;font-size:0.95rem}
+    .store-preview .url{color:#B84A5A;font-size:0.8rem;margin-top:4px}
+    
+    /* Final CTA */
+    .cta-section{background:#f0ede8;text-align:center;border-radius:20px;padding:60px 24px;margin:40px 0}
+    .cta-section h2{margin-bottom:16px}
+    .cta-section p{color:#666;max-width:500px;margin:0 auto 28px}
+    .cta-section .btn{display:inline-block;background:#B84A5A;color:#fff;padding:14px 40px;border-radius:999px;font-weight:700;font-size:1.1rem;text-decoration:none;transition:all .2s}
+    .cta-section .btn:hover{background:#9e3d4b;transform:translateY(-2px)}
+    
+    /* Footer */
+    footer{background:#1a1a2e;color:#aaa;text-align:center;padding:32px 24px;font-size:0.85rem}
+    footer a{color:#8FD0B0;text-decoration:none}
+    
+    @media(max-width:640px){
+      .hero h1{font-size:2rem}
+      .hero p{font-size:1rem}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">Conf<span>ei</span>taria</div>
+      <a href="https://wa.me/5531999999999">Falar no WhatsApp</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Sua confeitaria online<br>em <span style="color:#8FD0B0">minutos</span></h1>
+      <p>Cardápio digital, pedidos via WhatsApp, gestão de encomendas e pagamento via PIX — tudo no seu próprio site, com sua cara.</p>
+      <a href="https://wa.me/5531999999999" class="cta">Quero minha loja 🚀</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2>Tudo que sua <span class="highlight">confeitaria</span> precisa</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">🎂</div>
+          <h3>Cardápio Digital</h3>
+          <p>Produtos organizados por categorias, com fotos, descrições e preços. Fácil de atualizar pelo painel.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💬</div>
+          <h3>Pedidos via WhatsApp</h3>
+          <p>Cliente monta o carrinho, finaliza e o pedido cai direto no seu WhatsApp. Simples assim.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💳</div>
+          <h3>Pagamento PIX</h3>
+          <p>Integração com PIX via Efí — cliente paga online e você recebe na hora, com confirmação automática.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📊</div>
+          <h3>Painel de Gestão</h3>
+          <p>Acompanhe pedidos, controle estoque, veja relatórios financeiros. Tudo em tempo real.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🎨</div>
+          <h3>Layout Personalizado</h3>
+          <p>Cores, logotipo, banner — tudo com a identidade da sua marca. Sem código, direto no painel.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📱</div>
+          <h3>100% Responsivo</h3>
+          <p>Funciona perfeitamente no celular — onde a maioria dos seus clientes está.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff">
+    <div class="container">
+      <h2>Como <span class="highlight">funciona</span></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h4>Fale com a gente</h4>
+          <p>Mande um WhatsApp informando o nome da sua confeitaria e suas cores.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h4>A gente cria sua loja</h4>
+          <p>Em até 24h sua loja está no ar com cardápio, domínio e identidade visual.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h4>Você publica os produtos</h4>
+          <p>Pelo painel admin, cadastre seus bolos, doces e salgados com fotos e preços.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h4>Comece a vender!</h4>
+          <p>Divulgue seu link e receba pedidos direto no WhatsApp.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2><span class="highlight">Planos</span></h2>
+      <div class="plans-grid">
+        <div class="plan-card">
+          <div class="plan-name">Essencial</div>
+          <div class="plan-price">R$97</div>
+          <div class="plan-period">/mês</div>
+          <ul>
+            <li>Cardápio digital (até 30 produtos)</li>
+            <li>Pedidos via WhatsApp</li>
+            <li>Layout personalizado</li>
+            <li>Domínio próprio</li>
+            <li>Painel admin básico</li>
+          </ul>
+          <a href="https://wa.me/5531999999999" class="btn">Começar</a>
+        </div>
+        <div class="plan-card featured">
+          <div class="plan-name" style="color:#B84A5A">Profissional ⭐</div>
+          <div class="plan-price">R$197</div>
+          <div class="plan-period">/mês</div>
+          <ul>
+            <li>Cardápio ilimitado</li>
+            <li>Pedidos via WhatsApp + PIX</li>
+            <li>Layout personalizado</li>
+            <li>Domínio próprio</li>
+            <li>Painel admin completo</li>
+            <li>Gestão de estoque</li>
+            <li>Relatórios financeiros</li>
+            <li>Pré-venda e encomendas</li>
+          </ul>
+          <a href="https://wa.me/5531999999999" class="btn">Começar</a>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Personalizado</div>
+          <div class="plan-price">Sob consulta</div>
+          <div class="plan-period"></div>
+          <ul>
+            <li>Tudo do Profissional</li>
+            <li>Módulo de produção</li>
+            <li>Comandas e mesas</li>
+            <li>App mobile (PDV)</li>
+            <li>Múltiplos funcionários</li>
+            <li>Suporte prioritário</li>
+          </ul>
+          <a href="https://wa.me/5531999999999" class="btn">Falar conosco</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff">
+    <div class="container">
+      <h2>Lojas que já <span class="highlight">confiam</span> na gente</h2>
+      <div class="stores-grid">
+        <a href="https://chefandressaventura.com" target="_blank" class="store-preview">
+          <div class="emoji">👩‍🍳</div>
+          <div class="name">Chef Andressa Ventura</div>
+          <div class="url">chefandressaventura.com</div>
+        </a>
+        <a href="https://naybolos.com.br" target="_blank" class="store-preview">
+          <div class="emoji">🍰</div>
+          <div class="name">Nay Bolos</div>
+          <div class="url">naybolos.com.br</div>
+        </a>
+        <a href="https://deliciasdacelia.smartiza.com.br" target="_blank" class="store-preview">
+          <div class="emoji">🍬</div>
+          <div class="name">Delícias da Célia</div>
+          <div class="url">deliciasdacelia.smartiza.com.br</div>
+        </a>
+        <a href="https://confeitaria.smartiza.com.br/atelie-real" target="_blank" class="store-preview">
+          <div class="emoji">🎨</div>
+          <div class="name">ATELIÊ REAL</div>
+          <div class="url">/atelie-real</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="cta-section">
+        <h2>Pronto pra <span class="highlight">digitalizar</span> sua confeitaria?</h2>
+        <p>Mande uma mensagem agora e em até 24h sua loja está no ar. Sem burocracia, sem complicação.</p>
+        <a href="https://wa.me/5531999999999" class="btn">Quero minha loja 🚀</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>© 2026 <a href="https://smartiza.com.br">Smartiza</a> — Tecnologia para confeitarias</p>
+    </div>
+  </footer>
+</body>
+</html>
