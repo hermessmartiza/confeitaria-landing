@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const WHATSAPP = 'https://wa.me/554197601739'
+const API = 'https://confeitaria.smartiza.com.br/api'
 
 function useReveal() {
   useEffect(() => {
@@ -93,6 +94,42 @@ function Ticker() {
         {row}
       </div>
     </div>
+  )
+}
+
+function Stats() {
+  const [data, setData] = useState(null)
+  useEffect(() => {
+    fetch(`${API}/store/public/stats`)
+      .then(r => r.json())
+      .then(setData)
+      .catch(() => {})
+  }, [])
+
+  if (!data) return null
+
+  const items = [
+    { emoji: '🏪', valor: data.lojasAbertas, label: 'lojas abertas agora' },
+    { emoji: '📦', valor: data.pedidos30dias, label: 'pedidos nos últimos 30 dias' },
+    { emoji: '💰', valor: data.faturamento30dias >= 1000 ? `R$ ${(data.faturamento30dias/1000).toFixed(0)} mil` : `R$ ${data.faturamento30dias.toFixed(0)}`, label: 'faturamento em 30 dias' },
+    { emoji: '🍰', valor: data.produtosAtivos, label: 'produtos ativos' },
+  ]
+
+  return (
+    <section className="stats-section">
+      <div className="container">
+        <h2 className="reveal">Números que <span className="highlight">falam por si</span></h2>
+        <div className="stats-grid">
+          {items.map((item, i) => (
+            <div className="stat-card reveal" key={i}>
+              <div className="stat-emoji">{item.emoji}</div>
+              <div className="stat-value">{item.valor}</div>
+              <div className="stat-label">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -304,6 +341,7 @@ export default function App() {
       <main>
         <Hero />
         <Ticker />
+        <Stats />
         <Features />
         <HowItWorks />
         <Pricing />
