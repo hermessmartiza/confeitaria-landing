@@ -121,7 +121,7 @@ function Stats() {
         <h2 className="reveal">Números que <span className="highlight">falam por si</span></h2>
         <div className="stats-grid">
           {items.map((item, i) => (
-            <div className="stat-card reveal" key={i}>
+            <div className="stat-card" key={i}>
               <div className="stat-emoji">{item.emoji}</div>
               <div className="stat-value">{item.valor}</div>
               <div className="stat-label">{item.label}</div>
