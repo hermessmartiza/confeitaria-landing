@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 const WHATSAPP = 'https://wa.me/554197601739'
 const API = 'https://confeitaria.smartiza.com.br/api'
@@ -97,6 +97,34 @@ function Ticker() {
   )
 }
 
+function CountUp({ end, duration = 1200 }) {
+  const [val, setVal] = useState(0)
+  const ref = useRef(null)
+  const started = useRef(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || started.current) return
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        started.current = true
+        io.unobserve(el)
+        const start = performance.now()
+        const step = (now) => {
+          const p = Math.min((now - start) / duration, 1)
+          setVal(Math.floor(p * end))
+          if (p < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }
+    }, { threshold: 0.3 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [end, duration])
+
+  return <span ref={ref}>{val}</span>
+}
+
 function Stats() {
   const [data, setData] = useState(null)
   useEffect(() => {
@@ -109,11 +137,11 @@ function Stats() {
   if (!data) return null
 
   const items = [
-    { emoji: '🏪', valor: data.lojasAbertas, label: 'lojas abertas agora' },
-    { emoji: '📦', valor: data.pedidos30dias, label: 'pedidos nos últimos 30 dias' },
-    { emoji: '💰', valor: data.faturamento30dias >= 1000 ? `R$ ${(data.faturamento30dias/1000).toFixed(0)} mil` : `R$ ${data.faturamento30dias.toFixed(0)}`, label: 'faturamento em 30 dias' },
-    { emoji: '🍰', valor: data.produtosAtivos, label: 'produtos ativos' },
-    { emoji: '💸', valor: `R$ ${((data.faturamento30dias * 0.12) / 1000).toFixed(0)} mil`, label: 'economia vs apps de delivery' },
+    { emoji: '🏪', valor: data.lojasAbertas, label: 'lojas abertas agora', raw: data.lojasAbertas },
+    { emoji: '📦', valor: data.pedidos30dias, label: 'pedidos nos últimos 30 dias', raw: data.pedidos30dias },
+    { emoji: '💰', valor: `R$ ${(data.faturamento30dias/1000).toFixed(0)} mil`, label: 'faturamento em 30 dias', raw: Math.round(data.faturamento30dias/1000), prefix: 'R$ ', suffix: ' mil' },
+    { emoji: '🍰', valor: data.produtosAtivos, label: 'produtos ativos', raw: data.produtosAtivos },
+    { emoji: '💸', valor: `R$ ${((data.faturamento30dias * 0.12) / 1000).toFixed(0)} mil`, label: 'economia vs apps de delivery', raw: Math.round((data.faturamento30dias * 0.12) / 1000), prefix: 'R$ ', suffix: ' mil' },
   ]
 
   return (
@@ -124,7 +152,11 @@ function Stats() {
           {items.map((item, i) => (
             <div className="stat-card" key={i}>
               <div className="stat-emoji">{item.emoji}</div>
-              <div className="stat-value">{item.valor}</div>
+              <div className="stat-value">
+                {item.prefix && <span>{item.prefix}</span>}
+                <CountUp end={item.raw} />
+                {item.suffix && <span>{item.suffix}</span>}
+              </div>
               <div className="stat-label">{item.label}</div>
             </div>
           ))}
