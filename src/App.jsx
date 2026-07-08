@@ -136,12 +136,14 @@ function Stats() {
 
   if (!data) return null
 
+  const economiaBaixa = Math.round((data.faturamento30dias * 0.152) / 1000)  // 12% + 3.2%
+  const economiaAlta  = Math.round((data.faturamento30dias * 0.262) / 1000)  // 23% + 3.2%
+
   const items = [
     { emoji: '🏪', valor: data.lojasAbertas, label: 'lojas abertas agora', raw: data.lojasAbertas },
     { emoji: '📦', valor: data.pedidos30dias, label: 'pedidos nos últimos 30 dias', raw: data.pedidos30dias },
     { emoji: '💰', valor: `R$ ${(data.faturamento30dias/1000).toFixed(0)} mil`, label: 'faturamento em 30 dias', raw: Math.round(data.faturamento30dias/1000), prefix: 'R$ ', suffix: ' mil' },
-    { emoji: '🍰', valor: data.produtosAtivos, label: 'produtos ativos', raw: data.produtosAtivos },
-    { emoji: '💸', valor: `R$ ${((data.faturamento30dias * 0.12) / 1000).toFixed(0)} mil`, label: 'economia vs apps de delivery', raw: Math.round((data.faturamento30dias * 0.12) / 1000), prefix: 'R$ ', suffix: ' mil' },
+    { emoji: '💸', valor: `R$ ${economiaBaixa} a ${economiaAlta} mil`, label: 'economia vs apps (comissão + taxa)', raw: economiaBaixa, prefix: 'R$ ', suffix: ` a ${economiaAlta} mil` },
   ]
 
   return (
