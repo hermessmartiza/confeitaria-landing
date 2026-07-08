@@ -638,7 +638,7 @@ footer a {
 
 /* ── Stats Section ── */
 .stats-section { background: var(--cream); }
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 800px; margin: 0 auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; max-width: 950px; margin: 0 auto; }
 .stat-card { background: #fff; border: 1px solid rgba(184,74,90,0.18); border-radius: 16px; padding: 28px 16px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
 .stat-emoji { font-size: 1.8rem; margin-bottom: 8px; }

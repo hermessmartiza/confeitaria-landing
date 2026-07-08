@@ -113,6 +113,7 @@ function Stats() {
     { emoji: '📦', valor: data.pedidos30dias, label: 'pedidos nos últimos 30 dias' },
     { emoji: '💰', valor: data.faturamento30dias >= 1000 ? `R$ ${(data.faturamento30dias/1000).toFixed(0)} mil` : `R$ ${data.faturamento30dias.toFixed(0)}`, label: 'faturamento em 30 dias' },
     { emoji: '🍰', valor: data.produtosAtivos, label: 'produtos ativos' },
+    { emoji: '💸', valor: `R$ ${((data.faturamento30dias * 0.12) / 1000).toFixed(0)} mil`, label: 'economia vs apps de delivery' },
   ]
 
   return (
