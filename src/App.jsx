@@ -402,15 +402,15 @@ function Checkpoints() {
   return (
     <section className="checkpoints">
       <div className="container">
-        <h2 className="reveal">
+        <h2>
           A plataforma cresce <span className="highlight">com as confeitarias</span>
         </h2>
-        <p className="checkpoints-sub reveal">
+        <p className="checkpoints-sub">
           Cada nova loja financia a próxima entrega. Estes são os checkpoints — o que já está
           pronto e o que vem a seguir.
         </p>
 
-        <div className="checkpoint-meter reveal">
+        <div className="checkpoint-meter">
           <div className="meter-now">
             <strong>{total}</strong> {total === 1 ? 'confeitaria' : 'confeitarias'} na plataforma
           </div>
@@ -436,7 +436,7 @@ function Checkpoints() {
 
             return (
               <div
-                className={`checkpoint reveal${conquistado ? ' done' : ''}${emAndamento ? ' active' : ''}`}
+                className={`checkpoint${conquistado ? ' done' : ''}${emAndamento ? ' active' : ''}`}
                 key={c.lojas}
               >
                 <div className="checkpoint-mark">
