@@ -335,6 +335,135 @@ function Stores() {
   )
 }
 
+const CHECKPOINTS = [
+  {
+    lojas: 5,
+    titulo: 'A base',
+    resumo: 'Tudo que já está no ar hoje, funcionando todo dia.',
+    itens: [
+      'Loja própria com domínio e a identidade da sua marca',
+      'PIX online com confirmação automática do pagamento',
+      'Painel de pedidos em tempo real, online e no balcão',
+      'Encomendas com data agendada e controle de estoque',
+    ],
+  },
+  {
+    lojas: 10,
+    titulo: 'Saber quanto cada bolo dá de lucro',
+    resumo: 'Preço no chute acaba: o sistema calcula o custo real e mostra o que compensa produzir.',
+    itens: [
+      'Custo de cada receita calculado pelos ingredientes que você compra',
+      'Preço sugerido a partir da margem que você quer ganhar',
+      'Aviso quando um produto está saindo no prejuízo',
+    ],
+  },
+  {
+    lojas: 25,
+    titulo: 'Seus pedidos dos apps, no mesmo painel',
+    resumo: 'O que chega pelo iFood e pelo 99Food cai junto com o resto — sem tablet extra.',
+    itens: [
+      'Integração com iFood e 99Food',
+      'Pedidos dos apps no mesmo painel da sua loja própria',
+      'Estoque e produção atualizados por todos os canais',
+    ],
+  },
+  {
+    lojas: 100,
+    titulo: 'Nota fiscal sem dor de cabeça',
+    resumo: 'A parte burocrática que hoje toma seu domingo passa a ser automática.',
+    itens: [
+      'Emissão de nota fiscal direto pelo sistema',
+      'Nota gerada junto com o pedido, sem digitar duas vezes',
+      'Relatórios prontos para entregar à contabilidade',
+    ],
+  },
+]
+
+function Checkpoints() {
+  const [total, setTotal] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API}/store/public/stats`)
+      .then((r) => r.json())
+      .then((d) => setTotal(d.totalLojas))
+      .catch(() => {})
+  }, [])
+
+  if (total === null) return null
+
+  const proximo = CHECKPOINTS.find((c) => total < c.lojas)
+  const faltam = proximo ? proximo.lojas - total : 0
+  const anterior = [...CHECKPOINTS].reverse().find((c) => total >= c.lojas)
+  const base = anterior ? anterior.lojas : 0
+  const progresso = proximo
+    ? Math.min(100, Math.round(((total - base) / (proximo.lojas - base)) * 100))
+    : 100
+
+  return (
+    <section className="checkpoints">
+      <div className="container">
+        <h2 className="reveal">
+          A plataforma cresce <span className="highlight">com as confeitarias</span>
+        </h2>
+        <p className="checkpoints-sub reveal">
+          Cada nova loja financia a próxima entrega. Estes são os checkpoints — o que já está
+          pronto e o que vem a seguir.
+        </p>
+
+        <div className="checkpoint-meter reveal">
+          <div className="meter-now">
+            <strong>{total}</strong> {total === 1 ? 'confeitaria' : 'confeitarias'} na plataforma
+          </div>
+          <div className="meter-bar">
+            <div className="meter-fill" style={{ width: `${progresso}%` }} />
+          </div>
+          <div className="meter-next">
+            {proximo
+              ? `${faltam} ${faltam === 1 ? 'loja' : 'lojas'} para o próximo checkpoint`
+              : 'Todos os checkpoints alcançados'}
+          </div>
+        </div>
+
+        <div className="checkpoint-list">
+          {CHECKPOINTS.map((c) => {
+            const conquistado = total >= c.lojas
+            const emAndamento = proximo && c.lojas === proximo.lojas
+            const status = conquistado
+              ? 'Conquistado'
+              : emAndamento
+                ? `Faltam ${faltam}`
+                : 'A caminho'
+
+            return (
+              <div
+                className={`checkpoint reveal${conquistado ? ' done' : ''}${emAndamento ? ' active' : ''}`}
+                key={c.lojas}
+              >
+                <div className="checkpoint-mark">
+                  <span className="checkpoint-lojas">{c.lojas}</span>
+                  <span className="checkpoint-lojas-label">lojas</span>
+                </div>
+                <div className="checkpoint-body">
+                  <div className="checkpoint-head">
+                    <h3>{c.titulo}</h3>
+                    <span className="checkpoint-status">{status}</span>
+                  </div>
+                  <p className="checkpoint-resumo">{c.resumo}</p>
+                  <ul className="checkpoint-itens">
+                    {c.itens.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function FinalCTA() {
   return (
     <section>
@@ -381,6 +510,7 @@ export default function App() {
         <HowItWorks />
         <Pricing />
         <Stores />
+        <Checkpoints />
         <FinalCTA />
       </main>
       <Footer />
