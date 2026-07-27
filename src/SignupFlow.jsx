@@ -58,6 +58,77 @@ function useSlugCheck(slug) {
   return status
 }
 
+// ─── Tokenização de cartão (Fase 5) ─────────────────────────────────────────
+// NÃO VERIFICADO EM NAVEGADOR REAL NESTA SESSÃO. O SDK de tokenização da Efí
+// (nome público "EfiJs"/"payment-token-efi") tokeniza o cartão no navegador
+// do cliente — número e CVV nunca chegam no nosso backend, só o payment_token
+// resultante. A URL do script e o formato exato de $gn.ready/getPaymentToken
+// aqui seguem a documentação pública da Efí como eu a conheço, mas isso
+// precisa ser testado num navegador de verdade antes de confiar — não há
+// acesso a navegador nesta sessão pra confirmar visualmente. Se o SDK não
+// carregar ou a API mudou de nome, o erro aparece no console do navegador
+// e a tokenização falha com uma mensagem clara em vez de travar silenciosa.
+function loadEfiScript(payeeCode, sandbox) {
+  return new Promise((resolve, reject) => {
+    if (window.$gn) return resolve(window.$gn)
+    const existing = document.getElementById('efi-tokenization-sdk')
+    if (existing) {
+      existing.addEventListener('load', () => resolve(window.$gn))
+      existing.addEventListener('error', reject)
+      return
+    }
+    const script = document.createElement('script')
+    script.id = 'efi-tokenization-sdk'
+    const env = sandbox ? 'sandbox' : 'production'
+    script.src = `https://${sandbox ? 'sandbox.' : ''}gerencianet.com.br/v1/cdn/${payeeCode}/${crypto.randomUUID().replace(/-/g, '')}`
+    script.dataset.env = env
+    script.onload = () => resolve(window.$gn)
+    script.onerror = () => reject(new Error('Falha ao carregar o SDK de pagamento'))
+    document.head.appendChild(script)
+  })
+}
+
+function useCardTokenization() {
+  const [efiConfig, setEfiConfig] = useState(null)
+  useEffect(() => {
+    fetch(`${API}/signup/efi-public-config`).then(r => r.json()).then(setEfiConfig).catch(() => {})
+  }, [])
+
+  async function getPaymentToken(card) {
+    if (!efiConfig?.payeeCode) throw new Error('Configuração de pagamento indisponível — tente novamente em instantes.')
+    const gn = await loadEfiScript(efiConfig.payeeCode, efiConfig.sandbox)
+    return new Promise((resolve, reject) => {
+      gn.ready((checkout) => {
+        checkout.getPaymentToken({
+          brand: card.brand,
+          number: card.number.replace(/\D/g, ''),
+          cvv: card.cvv,
+          expirationMonth: card.expirationMonth,
+          expirationYear: card.expirationYear,
+          reuse: false,
+        }, (error, response) => {
+          if (error) return reject(new Error(error.error_description || 'Cartão recusado. Confira os dados e tente de novo.'))
+          resolve(response.data.payment_token)
+        })
+      })
+    })
+  }
+
+  return { getPaymentToken, ready: !!efiConfig }
+}
+
+function detectBrand(number) {
+  const n = number.replace(/\D/g, '')
+  if (/^4/.test(n)) return 'visa'
+  if (/^5[1-5]/.test(n)) return 'mastercard'
+  if (/^3[47]/.test(n)) return 'amex'
+  if (/^6(?:011|5)/.test(n)) return 'discover'
+  if (/^(?:2131|1800|35)/.test(n)) return 'jcb'
+  if (/^36/.test(n)) return 'diners'
+  if (/^(?:4011|4312|4389|4514|4573|6277|6362|6363|650|6516|6550)/.test(n)) return 'elo'
+  return 'visa' // fallback — o SDK recusa se estiver errado, não é um dado sensível
+}
+
 function SlugField({ slug, onChange }) {
   const status = useSlugCheck(slug)
   return (
@@ -83,8 +154,77 @@ function SlugField({ slug, onChange }) {
   )
 }
 
+function CardFields({ card, onChange }) {
+  const set = (key) => (e) => onChange({ ...card, [key]: e.target.value })
+  return (
+    <div className="signup-card-fields">
+      <div className="signup-field">
+        <label htmlFor="card-number">Número do cartão</label>
+        <input id="card-number" inputMode="numeric" value={card.number} onChange={set('number')} placeholder="0000 0000 0000 0000" required />
+      </div>
+      <div className="signup-field-row">
+        <div className="signup-field">
+          <label htmlFor="card-expmonth">Validade (mês)</label>
+          <input id="card-expmonth" inputMode="numeric" maxLength={2} value={card.expirationMonth} onChange={set('expirationMonth')} placeholder="MM" required />
+        </div>
+        <div className="signup-field">
+          <label htmlFor="card-expyear">Validade (ano)</label>
+          <input id="card-expyear" inputMode="numeric" maxLength={4} value={card.expirationYear} onChange={set('expirationYear')} placeholder="AAAA" required />
+        </div>
+        <div className="signup-field">
+          <label htmlFor="card-cvv">CVV</label>
+          <input id="card-cvv" inputMode="numeric" maxLength={4} value={card.cvv} onChange={set('cvv')} placeholder="123" required />
+        </div>
+      </div>
+      <div className="signup-field">
+        <label htmlFor="card-cpf">CPF do titular</label>
+        <input id="card-cpf" inputMode="numeric" value={card.cpf} onChange={set('cpf')} placeholder="000.000.000-00" required />
+      </div>
+      <div className="signup-field">
+        <label htmlFor="card-birth">Data de nascimento do titular</label>
+        <input id="card-birth" type="date" value={card.birth} onChange={set('birth')} required />
+      </div>
+      <p className="signup-sub" style={{ marginTop: '4px' }}>Endereço de cobrança</p>
+      <div className="signup-field-row">
+        <div className="signup-field">
+          <label htmlFor="card-cep">CEP</label>
+          <input id="card-cep" value={card.zipcode} onChange={set('zipcode')} required />
+        </div>
+        <div className="signup-field">
+          <label htmlFor="card-street">Rua</label>
+          <input id="card-street" value={card.street} onChange={set('street')} required />
+        </div>
+        <div className="signup-field">
+          <label htmlFor="card-number-addr">Número</label>
+          <input id="card-number-addr" value={card.number_addr} onChange={set('number_addr')} required />
+        </div>
+      </div>
+      <div className="signup-field-row">
+        <div className="signup-field">
+          <label htmlFor="card-neighborhood">Bairro</label>
+          <input id="card-neighborhood" value={card.neighborhood} onChange={set('neighborhood')} required />
+        </div>
+        <div className="signup-field">
+          <label htmlFor="card-city">Cidade</label>
+          <input id="card-city" value={card.city} onChange={set('city')} required />
+        </div>
+        <div className="signup-field">
+          <label htmlFor="card-state">UF</label>
+          <input id="card-state" maxLength={2} value={card.state} onChange={set('state')} placeholder="SP" required />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const EMPTY_CARD = {
+  number: '', expirationMonth: '', expirationYear: '', cvv: '', cpf: '', birth: '',
+  zipcode: '', street: '', number_addr: '', neighborhood: '', city: '', state: '',
+}
+
 function FormStep({ onSubmit, submitting, error }) {
-  const [form, setForm] = useState({ name: '', email: '', password: '', storeName: '', slug: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', storeName: '', slug: '', paymentMethod: 'PIX' })
+  const [card, setCard] = useState(EMPTY_CARD)
 
   const set = (key) => (e) => {
     const value = e.target.value
@@ -99,7 +239,7 @@ function FormStep({ onSubmit, submitting, error }) {
   return (
     <form
       className="signup-form"
-      onSubmit={(e) => { e.preventDefault(); onSubmit(form) }}
+      onSubmit={(e) => { e.preventDefault(); onSubmit(form, card) }}
     >
       <h3>Vamos criar sua loja</h3>
       <p className="signup-sub">Leva 2 minutos. Sua loja fica no ar assim que o pagamento confirmar.</p>
@@ -123,6 +263,23 @@ function FormStep({ onSubmit, submitting, error }) {
         <label htmlFor="signup-password">Crie uma senha</label>
         <input id="signup-password" type="password" minLength={8} value={form.password} onChange={set('password')} required />
       </div>
+
+      <div className="signup-field">
+        <label>Forma de pagamento</label>
+        <div className="signup-payment-toggle">
+          <button type="button" className={`signup-toggle-btn${form.paymentMethod === 'PIX' ? ' active' : ''}`} onClick={() => setForm(f => ({ ...f, paymentMethod: 'PIX' }))}>
+            PIX
+          </button>
+          <button type="button" className={`signup-toggle-btn${form.paymentMethod === 'CARD' ? ' active' : ''}`} onClick={() => setForm(f => ({ ...f, paymentMethod: 'CARD' }))}>
+            Cartão (mensalidade automática)
+          </button>
+        </div>
+        {form.paymentMethod === 'CARD' && (
+          <p className="signup-hint">Assinatura recorrente: cobra a implantação e a mensalidade nesse cartão, e renova sozinha todo mês.</p>
+        )}
+      </div>
+
+      {form.paymentMethod === 'CARD' && <CardFields card={card} onChange={setCard} />}
 
       {error && <p className="signup-error">{error}</p>}
 
@@ -195,6 +352,7 @@ export default function SignupModal({ open, onClose }) {
   const [signup, setSignup] = useState(null)
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const { getPaymentToken } = useCardTokenization()
 
   useEffect(() => {
     if (!open) { setStep('form'); setSignup(null); setError(null) }
@@ -221,18 +379,53 @@ export default function SignupModal({ open, onClose }) {
 
   if (!open) return null
 
-  async function handleSubmit(form) {
+  async function handleSubmit(form, card) {
     setSubmitting(true)
     setError(null)
     try {
+      const payload = { email: form.email, password: form.password, name: form.name, storeName: form.storeName, slug: form.slug }
+
+      if (form.paymentMethod === 'CARD') {
+        let paymentToken
+        try {
+          paymentToken = await getPaymentToken({ ...card, brand: detectBrand(card.number) })
+        } catch (tokenErr) {
+          setError(tokenErr.message || 'Não foi possível processar o cartão. Confira os dados e tente de novo.')
+          return
+        }
+        payload.paymentMethod = 'CARD'
+        payload.paymentToken = paymentToken
+        payload.cpf = card.cpf
+        payload.birth = card.birth
+        payload.billingAddress = {
+          zipcode: card.zipcode, street: card.street, number: card.number_addr,
+          neighborhood: card.neighborhood, city: card.city, state: card.state,
+        }
+      }
+
       const res = await fetch(`${API}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Não foi possível criar sua conta.'); return }
       trackFunnel('signup_started', data.slug)
+
+      // Cartão confirma na hora (sem QR pra esperar) — se deu certo, a loja
+      // já está no ar; se falhou, mostra o erro sem avançar de tela.
+      if (form.paymentMethod === 'CARD') {
+        if (!data.payment.ok) {
+          setError(data.payment.error || 'Cartão recusado. Confira os dados e tente de novo.')
+          return
+        }
+        setSignup(data)
+        trackFunnel('signup_paid', data.slug)
+        trackFunnel('signup_provisioned', data.slug)
+        setStep('success')
+        return
+      }
+
       setSignup(data)
       setStep('payment')
     } catch {
