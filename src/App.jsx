@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import SignupModal, { trackFunnel } from './SignupFlow'
 
 const WHATSAPP = 'https://wa.me/554197601739'
 const API = 'https://confeitaria.smartiza.com.br/api'
@@ -22,22 +23,22 @@ function useReveal() {
   }, [])
 }
 
-function Header() {
+function Header({ onSignup }) {
   return (
     <header>
       <div className="container header-inner">
         <div className="logo">
           Conf<span>ei</span>taria <em>by Smartiza</em>
         </div>
-        <a className="header-cta" href={WHATSAPP} target="_blank" rel="noreferrer">
-          Falar com a gente
-        </a>
+        <button className="header-cta" onClick={onSignup}>
+          Criar minha loja
+        </button>
       </div>
     </header>
   )
 }
 
-function Hero() {
+function Hero({ onSignup }) {
   return (
     <section className="hero">
       <div className="hero-sprinkles" aria-hidden="true">
@@ -60,9 +61,9 @@ function Hero() {
           marca.
         </p>
         <div className="hero-actions">
-          <a className="btn btn-light" href={WHATSAPP} target="_blank" rel="noreferrer">
+          <button className="btn btn-light" onClick={onSignup}>
             Quero começar agora 🚀
-          </a>
+          </button>
           <a className="btn btn-ghost" href="#oferta">
             Ver oferta
           </a>
@@ -262,7 +263,7 @@ function HowItWorks() {
   )
 }
 
-function Pricing() {
+function Pricing({ onSignup }) {
   return (
     <section id="oferta" className="pricing">
       <div className="container">
@@ -298,9 +299,9 @@ function Pricing() {
               <li>Suporte e atualizações inclusos</li>
             </ul>
           </div>
-          <a className="btn btn-primary btn-big" href={WHATSAPP} target="_blank" rel="noreferrer">
+          <button className="btn btn-primary btn-big" onClick={onSignup}>
             Garantir minha oferta 🚀
-          </a>
+          </button>
         </div>
       </div>
     </section>
@@ -464,7 +465,7 @@ function Checkpoints() {
   )
 }
 
-function FinalCTA() {
+function FinalCTA({ onSignup }) {
   return (
     <section>
       <div className="container">
@@ -473,12 +474,15 @@ function FinalCTA() {
             Pronto pra <span className="grad">profissionalizar</span> sua confeitaria?
           </h2>
           <p>
-            Mande uma mensagem agora e em até 24h sua loja está no ar.
+            Crie sua loja agora e em minutos ela está no ar.
             Implantação de <s>R$ 500</s> por <strong>R$ 300</strong> + R$ 50/mês.
           </p>
-          <a className="btn btn-light btn-big" href={WHATSAPP} target="_blank" rel="noreferrer">
+          <button className="btn btn-light btn-big" onClick={onSignup}>
             Quero minha loja 🚀
-          </a>
+          </button>
+          <p className="signup-alt" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            Prefere falar antes? <a href={WHATSAPP} target="_blank" rel="noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>Chama no WhatsApp</a>
+          </p>
         </div>
       </div>
     </section>
@@ -499,21 +503,26 @@ function Footer() {
 
 export default function App() {
   useReveal()
+  useEffect(() => { trackFunnel('visit') }, [])
+  const [signupOpen, setSignupOpen] = useState(false)
+  const openSignup = () => setSignupOpen(true)
+
   return (
     <>
-      <Header />
+      <Header onSignup={openSignup} />
       <main>
-        <Hero />
+        <Hero onSignup={openSignup} />
         <Ticker />
         <Stats />
         <Features />
         <HowItWorks />
-        <Pricing />
+        <Pricing onSignup={openSignup} />
         <Stores />
         <Checkpoints />
-        <FinalCTA />
+        <FinalCTA onSignup={openSignup} />
       </main>
       <Footer />
+      <SignupModal open={signupOpen} onClose={() => setSignupOpen(false)} />
     </>
   )
 }
