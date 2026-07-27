@@ -317,8 +317,9 @@ function PaymentStep({ signup }) {
       </p>
       {signup.payment?.qrCode ? (
         <>
-          <div className="signup-qr-placeholder">Escaneie o QR code no seu banco</div>
-          <textarea className="signup-copypaste" readOnly value={signup.payment.qrCode} onFocus={(e) => e.target.select()} />
+          <p className="signup-qr-label">Escaneie o QR code no seu banco</p>
+          <img className="signup-qr-image" src={signup.payment.qrCode} alt="QR code do PIX" />
+          <textarea className="signup-copypaste" readOnly value={signup.payment.pixCopyPaste || ''} onFocus={(e) => e.target.select()} />
         </>
       ) : (
         <p className="signup-error">

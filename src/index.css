@@ -833,14 +833,23 @@ footer a {
 }
 .signup-alt a { color: var(--rose); font-weight: 700; }
 
-.signup-qr-placeholder {
-  background: #fff;
-  border: 2px dashed rgba(184, 74, 90, 0.3);
-  border-radius: 14px;
-  padding: 32px;
+.signup-qr-label {
   text-align: center;
-  color: rgba(42, 21, 32, 0.5);
-  margin-bottom: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--plum);
+  margin: 0 0 10px;
+}
+
+.signup-qr-image {
+  display: block;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 12px;
+  padding: 12px;
+  background: #fff;
+  border: 2px solid rgba(184, 74, 90, 0.2);
+  border-radius: 14px;
 }
 
 .signup-copypaste {
