@@ -79,8 +79,12 @@ export default function PreviewLoja({ nome, brandColor, logoUrl, slug }) {
         {!carregou && <div className="signup-preview-carregando">Montando sua loja...</div>}
       </div>
 
+      <p className="signup-preview-aviso">
+        ✏️ <strong>Os textos são só um começo.</strong> Tudo o que aparece aqui — títulos, descrições,
+        fotos e cores — você edita depois no painel, quantas vezes quiser.
+      </p>
       <p className="signup-preview-nota">
-        É a loja de verdade — o mesmo layout que vai pro ar. Tudo dá pra ajustar depois no painel.
+        É a loja de verdade: o mesmo layout que vai pro ar.
       </p>
     </aside>
   )
