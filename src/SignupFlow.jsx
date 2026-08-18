@@ -483,13 +483,23 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
     e.preventDefault()
     setErroPasso(null)
     if (form.password.length < 8) return setErroPasso('A senha precisa de ao menos 8 caracteres.')
+    // Validado aqui porque é aqui que a pessoa digita. Antes isso morava no
+    // passo "Loja": o erro aparecia dois passos depois do campo, apontando pra
+    // um campo que nem estava na tela.
+    if (!/\S+\s+\S+/.test(form.name.trim())) {
+      return setErroPasso('Informe seu nome completo (nome e sobrenome).')
+    }
+    if (/\d/.test(form.name)) return setErroPasso('O nome não deve conter números.')
+    // DDD + 8 ou 9 dígitos. Barra o "asqwe2313" que chegou de um cadastro real.
+    const tel = soDigitos(form.phone)
+    if (tel.length < 10 || tel.length > 11) return setErroPasso('WhatsApp inválido. Use DDD + número, ex: (41) 99999-9999.')
+    if (/^(\d)\1+$/.test(tel)) return setErroPasso('WhatsApp inválido.')
     // Lead gravado aqui: a partir deste ponto a pessoa não se perde mais.
     registrarLead({ email: form.email, marketingConsent: form.marketingConsent, step: 'conta' })
     trackFunnel('signup_step_conta')
     // Conversão de loja de apresentação: nome/slug já existem (a loja já está
     // no ar) — pula direto pro pagamento, sem passar pelo passo "Loja".
     if (presetStore) {
-      if (!form.name || !form.phone) return setErroPasso('Preencha seu nome e WhatsApp.')
       setPasso(2)
       return
     }
@@ -506,17 +516,6 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
       return setErroPasso(slugStatus === 'taken' ? 'Esse endereço já está em uso. Escolha outro.' : String(slugStatus))
     }
     if (!form.slug || form.slug.length < 3) return setErroPasso('Escolha o endereço da sua loja.')
-    // A Efí exige nome e sobrenome do titular. Sem esta checagem aqui, a pessoa
-    // só descobria depois de preencher o cartão inteiro e clicar em pagar —
-    // aconteceu com um cliente real em 29/07/2026.
-    if (!/\S+\s+\S+/.test(form.name.trim())) {
-      return setErroPasso('Informe seu nome completo (nome e sobrenome) — é o titular do cartão.')
-    }
-    if (/\d/.test(form.name)) return setErroPasso('O nome não deve conter números.')
-    // DDD + 8 ou 9 dígitos. Barra o "asqwe2313" que chegou de um cadastro real.
-    const tel = soDigitos(form.phone)
-    if (tel.length < 10 || tel.length > 11) return setErroPasso('WhatsApp inválido. Use DDD + número, ex: (41) 99999-9999.')
-    if (/^(\d)\1+$/.test(tel)) return setErroPasso('WhatsApp inválido.')
     registrarLead({
       email: form.email, marketingConsent: form.marketingConsent, step: 'loja',
       name: form.name, phone: form.phone, storeName: form.storeName, slug: form.slug,
@@ -596,26 +595,26 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
             <p className="signup-hint">Mínimo de 8 caracteres. É com ela que você entra no painel da sua loja.</p>
           </div>
 
-          {presetStore && (
-            <>
-              <div className="signup-field">
-                <label htmlFor="signup-name">Seu nome completo</label>
-                <input id="signup-name" value={form.name} onChange={set('name')} placeholder="Nome e sobrenome" required />
-              </div>
-              <div className="signup-field">
-                <label htmlFor="signup-phone">Seu WhatsApp (com DDD)</label>
-                <input id="signup-phone" type="tel" inputMode="numeric" autoComplete="tel" value={form.phone}
-                  onChange={(e) => {
-                    const d = soDigitos(e.target.value).slice(0, 11)
-                    const fmt = d.length > 10 ? d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
-                      : d.length > 6 ? d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
-                      : d.length > 2 ? d.replace(/(\d{2})(\d*)/, '($1) $2') : d
-                    setForm((f) => ({ ...f, phone: fmt }))
-                  }}
-                  placeholder="(41) 99999-9999" required />
-              </div>
-            </>
-          )}
+          {/* Nome e WhatsApp são sobre a PESSOA, então moram aqui nos dois
+              fluxos. Antes só apareciam na conversão de loja de apresentação
+              (presetStore) e, no cadastro normal, só lá no passo "Loja" — o
+              que misturava dados do dono com dados da confeitaria. */}
+          <div className="signup-field">
+            <label htmlFor="signup-name">Seu nome completo</label>
+            <input id="signup-name" value={form.name} onChange={set('name')} placeholder="Nome e sobrenome" required />
+          </div>
+          <div className="signup-field">
+            <label htmlFor="signup-phone">Seu WhatsApp (com DDD)</label>
+            <input id="signup-phone" type="tel" inputMode="numeric" autoComplete="tel" value={form.phone}
+              onChange={(e) => {
+                const d = soDigitos(e.target.value).slice(0, 11)
+                const fmt = d.length > 10 ? d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
+                  : d.length > 6 ? d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+                  : d.length > 2 ? d.replace(/(\d{2})(\d*)/, '($1) $2') : d
+                setForm((f) => ({ ...f, phone: fmt }))
+              }}
+              placeholder="(41) 99999-9999" required />
+          </div>
 
           <label className="signup-check">
             <input type="checkbox" checked={form.marketingConsent} onChange={set('marketingConsent')} />
