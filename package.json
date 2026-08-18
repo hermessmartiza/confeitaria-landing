@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/generate-pages.mjs && vite",
+    "prebuild": "node scripts/generate-pages.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

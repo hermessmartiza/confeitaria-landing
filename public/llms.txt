@@ -1,0 +1,17 @@
+# Confeitto
+
+> Sistema completo de gestão para confeitarias: venda online e presencial, PIX automático, encomendas, estoque e relatórios financeiros.
+
+## Páginas principais
+
+- [Início](https://confeitto.app/): Apresentação do produto e planos
+- [Perguntas frequentes](https://confeitto.app/faq): Dúvidas sobre cadastro, pagamento e segurança
+- [Blog](https://confeitto.app/blog/): Conteúdo sobre gestão de confeitarias
+- [Termos de uso](https://confeitto.app/termos)
+- [Política de privacidade](https://confeitto.app/privacidade)
+
+## Blog
+
+- [LGPD na sua confeitaria: o que você precisa saber](https://confeitto.app/blog/lgpd-na-sua-confeitaria): Se você guarda nome, telefone ou endereço de cliente numa planilha ou caderno, a LGPD já se aplica ao seu negócio — mesmo pequeno.
+- [WhatsApp ou loja própria: o que muda pro seu negócio crescer](https://confeitto.app/blog/whatsapp-ou-loja-propria): Vender só pelo WhatsApp funciona no começo. O problema aparece quando o número de pedidos cresce mais rápido que sua capacidade de responder.
+- [Como precificar seu bolo sem sair no prejuízo](https://confeitto.app/blog/como-precificar-bolo-sem-prejuizo): A diferença entre "vender bastante" e "sobrar dinheiro no fim do mês" quase sempre está na precificação — e não no quanto você trabalha.

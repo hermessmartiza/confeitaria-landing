@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Confeitto">
+  <title>Confeitto</title>
+  <rect width="64" height="64" rx="15" fill="#4a1526"/>
+  <circle cx="32" cy="17" r="4.5" fill="#f5b942"/>
+  <rect x="10" y="20" width="44" height="30" rx="4" fill="#b84a5a"/>
+  <rect x="10" y="31" width="44" height="6" fill="#8fd0b0"/>
+  <rect x="4" y="50" width="56" height="7" rx="3.5" fill="#faf9f7"/>
+</svg>

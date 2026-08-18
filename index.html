@@ -3,13 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smartiza — Sistema completo para sua Confeitaria</title>
-  <meta name="description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Implantação de R$500 por R$300 + R$50/mês." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <title>Confeitto — Sistema completo para sua Confeitaria</title>
+  <meta name="description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Comece a vender em minutos." />
+  <link rel="canonical" href="https://confeitto.app/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="/brand/icone.svg" />
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="llms.txt" href="/llms.txt" />
+
+  <!-- Open Graph / WhatsApp / LinkedIn -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://confeitto.app/" />
+  <meta property="og:title" content="Confeitto — Sistema completo para sua Confeitaria" />
+  <meta property="og:description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Comece a vender em minutos." />
+  <meta property="og:image" content="https://confeitto.app/brand/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter/X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Confeitto — Sistema completo para sua Confeitaria" />
+  <meta name="twitter:description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Comece a vender em minutos." />
+  <meta name="twitter:image" content="https://confeitto.app/brand/og-image.png" />
+
+  <!-- SoftwareApplication foi removido daqui: o rich result exige offers +
+       aggregateRating, e o preço "ativo" hoje é só o plano de teste (não o
+       preço real de venda) — declarar isso pro Google seria informação
+       falsa. Reintroduzir quando o catálogo de planos estiver definitivo. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Confeitto",
+    "url": "https://confeitto.app/",
+    "logo": "https://confeitto.app/brand/apple-touch-icon.png"
+  }
+  </script>
+
+  <link rel="stylesheet" href="/landing-assets/fonts/outfit.css" />
+  <link rel="preload" href="/brand/simbolo.svg" as="image" fetchpriority="high" />
 </head>
 <body>
+  <a href="#root" class="skip-link">Pular para o conteúdo</a>
+  <!-- Conteúdo/links reais fora do React de propósito: a landing é uma SPA
+       (conteúdo só existe depois do JS rodar), e ferramentas que não
+       executam JavaScript — a maioria dos scanners de SEO e os crawlers de
+       rede social — viam uma página vazia, sem link nenhum. Isso é a mesma
+       navegação que já existe no rodapé renderizado por React; some assim
+       que o app hidrata, então não duplica nada pra quem tem JS. -->
+  <noscript>
+    <header style="padding:20px;font-family:system-ui,sans-serif;">
+      <strong>Confeitto</strong> — Sistema completo para sua confeitaria.
+      <nav style="margin-top:10px;">
+        <a href="/blog/">Blog</a> ·
+        <a href="/faq">Perguntas frequentes</a> ·
+        <a href="/termos">Termos de uso</a> ·
+        <a href="/privacidade">Privacidade</a>
+      </nav>
+    </header>
+  </noscript>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

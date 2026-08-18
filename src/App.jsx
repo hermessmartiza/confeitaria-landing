@@ -1,8 +1,14 @@
 import { useEffect, useState, useRef } from 'react'
 import SignupModal, { trackFunnel } from './SignupFlow'
+import { HERO, FEATURES, FEATURES_INTRO, STEPS, PRICING_INCLUDES } from './heroContent'
 
 const WHATSAPP = 'https://wa.me/554197601739'
 const API = 'https://confeitaria.smartiza.com.br/api'
+// Catálogo de planos (Fase 4/7) — precisa apontar pro backend do próprio
+// ambiente onde a landing está rodando (isolado ou produção), não sempre pra
+// produção real como o API acima (que é leitura pública de stats, feature
+// anterior e sem relação com isso).
+const SIGNUP_API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza.com.br/api'
 
 function useReveal() {
   useEffect(() => {
@@ -28,7 +34,8 @@ function Header({ onSignup }) {
     <header>
       <div className="container header-inner">
         <div className="logo">
-          Conf<span>ei</span>taria <em>by Smartiza</em>
+          <img src="/brand/simbolo.svg" alt="Confeitto, sistema de gestão para confeitarias" width="30" height="30" className="logo-mark" fetchPriority="high" />
+          <span className="logo-text">Conf<span className="logo-ei">ei</span>tto</span>
         </div>
         <button className="header-cta" onClick={onSignup}>
           Criar minha loja
@@ -50,22 +57,20 @@ function Hero({ onSignup }) {
         <span style={{ left: '88%', animationDelay: '2s' }}>🍓</span>
       </div>
       <div className="container hero-content">
-        <div className="hero-badge">✨ Oferta de lançamento — implantação com 40% OFF</div>
+        <div className="hero-badge">{HERO.badge}</div>
         <h1>
-          O sistema <span className="grad">completo</span> para sua
-          confeitaria <span className="grad">vender mais</span>
+          {HERO.headingBefore}
+          <span className="grad">{HERO.headingGrad1}</span>
+          {HERO.headingMiddle}
+          <span className="grad">{HERO.headingGrad2}</span>
         </h1>
-        <p>
-          Venda online e presencial, gestão de encomendas, estoque, PIX
-          automático e relatórios — tudo em um só painel, com a cara da sua
-          marca.
-        </p>
+        <p>{HERO.paragraph}</p>
         <div className="hero-actions">
           <button className="btn btn-light" onClick={onSignup}>
-            Quero começar agora 🚀
+            {HERO.ctaPrimaryLabel}
           </button>
-          <a className="btn btn-ghost" href="#oferta">
-            Ver oferta
+          <a className="btn btn-ghost" href={HERO.ctaSecondaryHref}>
+            {HERO.ctaSecondaryLabel}
           </a>
         </div>
       </div>
@@ -169,39 +174,6 @@ function Stats() {
   )
 }
 
-const FEATURES = [
-  {
-    icon: '🛍️',
-    title: 'Loja Online Própria',
-    text: 'Catálogo com fotos, carrinho e checkout no seu próprio site, com domínio próprio e a identidade da sua marca.',
-  },
-  {
-    icon: '🏪',
-    title: 'Venda Presencial (PDV)',
-    text: 'Registre as vendas do balcão em segundos e mantenha online e presencial no mesmo caixa, sem retrabalho.',
-  },
-  {
-    icon: '💳',
-    title: 'Pagamento PIX',
-    text: 'Cliente paga online e você recebe na hora, com confirmação automática do pagamento.',
-  },
-  {
-    icon: '📦',
-    title: 'Gestão de Encomendas',
-    text: 'Agenda de produção, pré-venda e controle de entregas — chega de caderninho e pedidos perdidos.',
-  },
-  {
-    icon: '📊',
-    title: 'Painel de Gestão',
-    text: 'Pedidos, estoque e relatórios financeiros em tempo real, do celular ou do computador.',
-  },
-  {
-    icon: '🎨',
-    title: 'Sua Marca, Seu Estilo',
-    text: 'Cores, logotipo e banner personalizados direto no painel, sem precisar de código.',
-  },
-]
-
 function Features() {
   return (
     <section id="recursos">
@@ -209,6 +181,7 @@ function Features() {
         <h2 className="reveal">
           Tudo que sua <span className="highlight">confeitaria</span> precisa
         </h2>
+        <p className="section-intro reveal">{FEATURES_INTRO}</p>
         <div className="features-grid">
           {FEATURES.map((f) => (
             <div className="feature-card reveal" key={f.title}>
@@ -223,25 +196,6 @@ function Features() {
   )
 }
 
-const STEPS = [
-  {
-    title: 'Fale com a gente',
-    text: 'Nos chame informando o nome da sua confeitaria e as cores da sua marca.',
-  },
-  {
-    title: 'A gente cria sua loja',
-    text: 'Em até 24h sua loja está no ar com cardápio, domínio e identidade visual.',
-  },
-  {
-    title: 'Cadastre seus produtos',
-    text: 'Pelo painel, publique bolos, doces e salgados com fotos e preços.',
-  },
-  {
-    title: 'Venda online e no balcão',
-    text: 'Acompanhe todos os pedidos e vendas em tempo real, num painel só.',
-  },
-]
-
 function HowItWorks() {
   return (
     <section className="section-alt">
@@ -253,7 +207,7 @@ function HowItWorks() {
           {STEPS.map((s, i) => (
             <div className="step reveal" key={s.title}>
               <div className="step-num">{i + 1}</div>
-              <h4>{s.title}</h4>
+              <h3>{s.title}</h3>
               <p>{s.text}</p>
             </div>
           ))}
@@ -263,7 +217,32 @@ function HowItWorks() {
   )
 }
 
+// Plano padrão vindo da API. Existe como hook porque mais de uma seção mostra
+// preço — e preço escrito à mão no JSX já divergiu do que o sistema cobra de
+// verdade (a landing anunciava R$300 enquanto o plano cobrava R$200).
+function usePlanoPadrao() {
+  const [plan, setPlan] = useState(null)
+  const [loadError, setLoadError] = useState(false)
+
+  useEffect(() => {
+    fetch(`${SIGNUP_API}/signup/plans`)
+      .then(r => r.json())
+      .then(plans => {
+        const chosen = plans.find(p => p.isDefault) || plans[0]
+        if (!chosen) { setLoadError(true); return }
+        setPlan(chosen)
+      })
+      .catch(() => setLoadError(true))
+  }, [])
+
+  return { plan, loadError }
+}
+
+const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
+
 function Pricing({ onSignup }) {
+  const { plan, loadError } = usePlanoPadrao()
+
   return (
     <section id="oferta" className="pricing">
       <div className="container">
@@ -275,28 +254,23 @@ function Pricing({ onSignup }) {
           <div className="pricing-body">
             <div className="pricing-left">
               <div className="price-label">Implantação única</div>
-              <div className="price-old">
-                de <s>R$ 500</s>
-              </div>
-              <div className="price-now">
-                <span className="currency">R$</span>300
-                <span className="discount-badge">−40%</span>
-              </div>
-              <div className="price-plus">+</div>
-              <div className="price-monthly">
-                <strong>R$ 50</strong>/mês
-              </div>
+              {plan ? (
+                <>
+                  <div className="price-now">
+                    <span className="currency">R$</span>{plan.setupFee.toFixed(0)}
+                  </div>
+                  <div className="price-plus">+</div>
+                  <div className="price-monthly">
+                    <strong>R$ {plan.monthlyFee.toFixed(0)}</strong>/mês
+                  </div>
+                </>
+              ) : (
+                <div className="price-now price-loading">{loadError ? '—' : 'Carregando...'}</div>
+              )}
               <div className="price-note">Sem fidelidade. Cancele quando quiser.</div>
             </div>
             <ul className="pricing-list">
-              <li>Loja online completa com domínio próprio</li>
-              <li>PDV para venda presencial</li>
-              <li>Pagamento PIX com confirmação automática</li>
-              <li>Gestão de encomendas e agenda de produção</li>
-              <li>Controle de estoque</li>
-              <li>Relatórios financeiros</li>
-              <li>Layout com a identidade da sua marca</li>
-              <li>Suporte e atualizações inclusos</li>
+              {PRICING_INCLUDES.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </div>
           <button className="btn btn-primary btn-big" onClick={onSignup}>
@@ -324,7 +298,7 @@ function Stores() {
         </h2>
         <div className="stores-grid">
           {STORES.map((s) => (
-            <a href={s.url} target="_blank" rel="noreferrer" className="store-preview reveal" key={s.name}>
+            <a href={s.url} target="_blank" rel="noopener noreferrer" className="store-preview reveal" key={s.name}>
               <div className="emoji">{s.emoji}</div>
               <div className="name">{s.name}</div>
               <div className="url">{s.label}</div>
@@ -466,6 +440,9 @@ function Checkpoints() {
 }
 
 function FinalCTA({ onSignup }) {
+  const { plan } = usePlanoPadrao()
+  const temDescontoPix = plan?.pixDiscountPercent > 0
+
   return (
     <section>
       <div className="container">
@@ -475,13 +452,17 @@ function FinalCTA({ onSignup }) {
           </h2>
           <p>
             Crie sua loja agora e em minutos ela está no ar.
-            Implantação de <s>R$ 500</s> por <strong>R$ 300</strong> + R$ 50/mês.
+            {plan && (
+              <> Implantação de <strong>{moeda(plan.setupFee)}</strong>
+                {temDescontoPix && <> (ou <strong>{moeda(plan.setupFee * (1 - plan.pixDiscountPercent / 100))}</strong> no PIX)</>}
+                {' '}+ {moeda(plan.monthlyFee)}/mês.</>
+            )}
           </p>
           <button className="btn btn-light btn-big" onClick={onSignup}>
             Quero minha loja 🚀
           </button>
           <p className="signup-alt" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Prefere falar antes? <a href={WHATSAPP} target="_blank" rel="noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>Chama no WhatsApp</a>
+            Prefere falar antes? <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>Chama no WhatsApp</a>
           </p>
         </div>
       </div>
@@ -493,6 +474,12 @@ function Footer() {
   return (
     <footer>
       <div className="container">
+        <nav className="footer-nav">
+          <a href="/blog/">Blog</a>
+          <a href="/faq">Perguntas frequentes</a>
+          <a href="/termos">Termos de uso</a>
+          <a href="/privacidade">Privacidade</a>
+        </nav>
         <p>
           © 2026 <a href="https://smartiza.com.br">Smartiza</a> — Tecnologia para confeitarias
         </p>
@@ -505,7 +492,26 @@ export default function App() {
   useReveal()
   useEffect(() => { trackFunnel('visit') }, [])
   const [signupOpen, setSignupOpen] = useState(false)
+  const [presetStore, setPresetStore] = useState(null)
   const openSignup = () => setSignupOpen(true)
+
+  // Loja de apresentação virando cliente: o banner na loja (/{slug}) manda
+  // pra cá com ?convert=slug. Busca o nome real da loja antes de abrir o
+  // modal — sem isso o passo "Loja" apareceria pedindo pra escolher um nome
+  // que já existe.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get('convert')
+    if (!slug) return
+    fetch(`${SIGNUP_API}/signup/check-slug?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.isPresentation) {
+          setPresetStore({ slug, name: d.storeName })
+          setSignupOpen(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   return (
     <>
@@ -522,7 +528,7 @@ export default function App() {
         <FinalCTA onSignup={openSignup} />
       </main>
       <Footer />
-      <SignupModal open={signupOpen} onClose={() => setSignupOpen(false)} />
+      <SignupModal open={signupOpen} onClose={() => setSignupOpen(false)} presetStore={presetStore} />
     </>
   )
 }
