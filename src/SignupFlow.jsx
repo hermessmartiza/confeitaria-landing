@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import PreviewLoja from './PreviewLoja'
 
 const API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza.com.br/api'
 const WHATSAPP = 'https://wa.me/554197601739'
@@ -621,6 +622,7 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
       )}
 
       {passo === 1 && (
+        <div className="signup-com-preview">
         <form className="signup-form" onSubmit={avancarDaLoja}>
           <div className="signup-field">
             <label htmlFor="signup-storeName">Nome da confeitaria</label>
@@ -682,6 +684,8 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
             <button className="btn btn-primary" type="submit">Continuar</button>
           </div>
         </form>
+        <PreviewLoja nome={form.storeName} brandColor={form.brandColor} logoUrl={form.logoUrl} slug={form.slug} />
+        </div>
       )}
 
       {passo === 2 && (

@@ -826,6 +826,117 @@ footer a {
 }
 
 .signup-card-fields { border-top: 1px dashed rgba(184, 74, 90, 0.25); margin-top: 4px; padding-top: 14px; }
+/* ── Preview ao vivo da loja no cadastro ───────────────────────────────── */
+/* O modal é estreito (440px) porque os outros passos são só formulário. No
+   passo da loja ele precisa caber form + preview lado a lado — o :has() alarga
+   sem precisar que o componente pai saiba que o preview existe. */
+.signup-modal:has(.signup-com-preview) { max-width: 1020px; }
+
+.signup-com-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: 30px;
+  align-items: start;
+}
+
+.signup-preview { position: sticky; top: 0; }
+
+.signup-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.signup-preview-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--plum);
+}
+.signup-preview-toggle { display: flex; gap: 4px; }
+.signup-preview-toggle button {
+  border: 1.5px solid rgba(184, 74, 90, 0.25);
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px 9px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.signup-preview-toggle button.ativo { border-color: var(--rose); background: rgba(184, 74, 90, 0.08); }
+
+.signup-preview-moldura {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid rgba(184, 74, 90, 0.22);
+  box-shadow: 0 12px 30px rgba(42, 21, 32, 0.16);
+  background: #fff;
+  transition: max-width 0.25s ease;
+  margin: 0 auto;
+  width: 100%;
+}
+.signup-preview-desktop { max-width: 100%; }
+.signup-preview-mobile { max-width: 340px; }
+
+.signup-preview-barra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 11px;
+  background: #f3ecef;
+  border-bottom: 1px solid rgba(184, 74, 90, 0.15);
+}
+.signup-preview-pontos { display: flex; gap: 5px; }
+.signup-preview-pontos i {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: rgba(184, 74, 90, 0.3);
+}
+.signup-preview-url {
+  font-size: 0.72rem;
+  color: rgba(42, 21, 32, 0.5);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signup-preview-moldura iframe {
+  display: block;
+  width: 100%;
+  height: 540px;
+  border: 0;
+  background: #fff;
+}
+
+.signup-preview-carregando {
+  position: absolute;
+  inset: 32px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: rgba(42, 21, 32, 0.5);
+  font-size: 0.9rem;
+}
+
+.signup-preview-nota {
+  font-size: 0.78rem;
+  color: rgba(42, 21, 32, 0.55);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* Abaixo de 900px o lado a lado não cabe: o preview vai pra cima do formulário,
+   menor, funcionando como confirmação visual em vez de tela de trabalho. */
+@media (max-width: 900px) {
+  .signup-modal:has(.signup-com-preview) { max-width: 440px; }
+  .signup-com-preview { grid-template-columns: 1fr; gap: 22px; }
+  .signup-preview { position: static; order: -1; }
+  .signup-preview-moldura iframe { height: 300px; }
+  .signup-preview-mobile { max-width: 100%; }
+}
+
 /* ── Cupom de desconto no signup ───────────────────────────────────────── */
 .signup-cupom-row { display: flex; gap: 8px; }
 .signup-cupom-row input { flex: 1; text-transform: uppercase; letter-spacing: 0.04em; }
