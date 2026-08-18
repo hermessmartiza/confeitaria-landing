@@ -380,7 +380,7 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '',
     storeName: presetStore?.name || '', slug: presetStore?.slug || '',
-    paymentMethod: 'CARD', marketingConsent: false,
+    paymentMethod: 'CARD', subscriptionMethod: 'CARD', marketingConsent: false,
     brandColor: '', logoUrl: '', couponCode: '',
   })
   // Só entra em form.couponCode depois que o backend validou — nunca mandamos
@@ -441,6 +441,11 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
   const setupPix = cupomInfo
     ? cupomInfo.setupFeeCupomMaisPix
     : (plano ? plano.setupFee * (1 - (plano.pixDiscountPercent || 0) / 100) : null)
+
+  // Cartão é pedido se QUALQUER uma das duas cobranças for no cartão. Com as
+  // duas no PIX o cadastro não precisa de número, CVV, CPF nem endereço de
+  // cobrança — são 12 campos que existiam só pra montar a recorrência.
+  const precisaCartao = form.paymentMethod === 'CARD' || form.subscriptionMethod === 'CARD'
 
   async function onLogoSelected(e) {
     const file = e.target.files?.[0]
@@ -547,9 +552,14 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
 
   function enviar(e) {
     e.preventDefault()
-    const erros = validarCartao()
-    setErrosCartao(erros)
-    if (Object.keys(erros).length > 0) return
+    // Sem cartão no fluxo não há o que validar — validarCartao() cobra número,
+    // CVV, CPF e endereço, e travaria o envio de quem escolheu PIX nas duas
+    // cobranças sem nunca ter visto um campo de cartão.
+    if (precisaCartao) {
+      const erros = validarCartao()
+      setErrosCartao(erros)
+      if (Object.keys(erros).length > 0) return
+    }
 
     registrarLead({
       email: form.email, marketingConsent: form.marketingConsent, step: 'pagamento',
@@ -631,22 +641,6 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
 
           <SlugField slug={form.slug} onChange={(v) => setForm((f) => ({ ...f, slug: v, slugTouched: true }))} />
 
-          <div className="signup-field">
-            <label htmlFor="signup-name">Seu nome completo</label>
-            <input id="signup-name" value={form.name} onChange={set('name')} placeholder="Nome e sobrenome" required />
-          </div>
-          <div className="signup-field">
-            <label htmlFor="signup-phone">Seu WhatsApp (com DDD)</label>
-            <input id="signup-phone" type="tel" inputMode="numeric" autoComplete="tel" value={form.phone}
-              onChange={(e) => {
-                const d = soDigitos(e.target.value).slice(0, 11)
-                const fmt = d.length > 10 ? d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
-                  : d.length > 6 ? d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
-                  : d.length > 2 ? d.replace(/(\d{2})(\d*)/, '($1) $2') : d
-                setForm((f) => ({ ...f, phone: fmt }))
-              }}
-              placeholder="(41) 99999-9999" required />
-          </div>
 
           <div className="signup-field">
             <label htmlFor="signup-brandColor">Cor da sua marca <span className="signup-optional">(opcional)</span></label>
@@ -747,11 +741,35 @@ function FormStep({ onSubmit, submitting, error, presetStore }) {
               {form.paymentMethod === 'PIX'
                 ? 'Você paga a implantação por PIX e sua loja entra no ar assim que o pagamento cair.'
                 : 'A implantação é cobrada agora no cartão.'}
-              {' '}A mensalidade{plano ? ` de ${moeda(plano.monthlyFee)}` : ''} é sempre no cartão de crédito, renovando sozinha todo mês — por isso pedimos os dados do cartão abaixo nos dois casos.
             </p>
           </div>
 
-          <CardFields card={card} onChange={setCard} erros={errosCartao} />
+          <div className="signup-field">
+            <label>E a mensalidade{plano ? ` de ${moeda(plano.monthlyFee)}` : ''}?</label>
+            <div className="signup-paymethods">
+              <button type="button"
+                className={`signup-paymethod${form.subscriptionMethod === 'CARD' ? ' ativo' : ''}`}
+                onClick={() => setForm((f) => ({ ...f, subscriptionMethod: 'CARD' }))}>
+                <strong>💳 Cartão</strong>
+                <span>Renova sozinha</span>
+              </button>
+              <button type="button"
+                className={`signup-paymethod${form.subscriptionMethod === 'PIX' ? ' ativo' : ''}`}
+                onClick={() => setForm((f) => ({ ...f, subscriptionMethod: 'PIX' }))}>
+                <strong>⚡ PIX</strong>
+                <span>Você paga todo mês</span>
+              </button>
+            </div>
+            <p className="signup-hint">
+              {form.subscriptionMethod === 'CARD'
+                ? 'A cobrança entra sozinha no cartão todo mês. Dá pra cancelar quando quiser, direto no painel.'
+                : 'Todo mês a gente te manda um PIX pra pagar. Sua loja fica no ar normalmente — só não deixe vencer, porque depois de 15 dias em atraso o acesso é bloqueado (nada é apagado).'}
+            </p>
+          </div>
+
+          {/* Cartão só aparece pra quem vai usar cartão em alguma das duas
+              cobranças. Tudo no PIX = 12 campos a menos no cadastro. */}
+          {precisaCartao && <CardFields card={card} onChange={setCard} erros={errosCartao} />}
 
           {error && <p className="signup-error">{error}</p>}
 
@@ -865,27 +883,35 @@ export default function SignupModal({ open, onClose, presetStore }) {
         ...(form.couponCode ? { couponCode: form.couponCode } : {}),
       }
 
-      // O cartão é tokenizado nos DOIS caminhos: a implantação pode ir no PIX
-      // (com desconto), mas a mensalidade é sempre cartão recorrente. O token
-      // reutilizável (reuse:true) é o da assinatura; o de uso único só é
-      // gerado quando a implantação também vai no cartão.
       const pagaImplantacaoNoCartao = form.paymentMethod === 'CARD'
-      try {
-        const cardData = { ...card, brand: detectBrand(card.number) }
-        payload.paymentTokenSubscription = await getPaymentToken(cardData, { reuse: true })
-        if (pagaImplantacaoNoCartao) {
-          payload.paymentToken = await getPaymentToken(cardData, { reuse: false })
-        }
-      } catch (tokenErr) {
-        setError(tokenErr.message || 'Não foi possível processar o cartão. Confira os dados e tente de novo.')
-        return
-      }
+      const mensalidadeNoCartao = form.subscriptionMethod === 'CARD'
       payload.paymentMethod = pagaImplantacaoNoCartao ? 'CARD' : 'PIX'
-      payload.cpf = card.cpf
-      payload.birth = card.birth
-      payload.billingAddress = {
-        zipcode: card.zipcode, street: card.street, number: card.number_addr,
-        neighborhood: card.neighborhood, city: card.city, state: card.state,
+      payload.subscriptionMethod = mensalidadeNoCartao ? 'CARD' : 'PIX'
+
+      // Só tokeniza o que vai ser usado. Com as duas cobranças no PIX não há
+      // cartão preenchido — tokenizar aqui chamaria a Efí com campos vazios e
+      // devolveria erro de cartão pra quem nunca escolheu cartão.
+      // reuse:true é o token da assinatura recorrente; reuse:false é o da
+      // implantação, cobrança avulsa (30/07/2026).
+      if (pagaImplantacaoNoCartao || mensalidadeNoCartao) {
+        try {
+          const cardData = { ...card, brand: detectBrand(card.number) }
+          if (mensalidadeNoCartao) {
+            payload.paymentTokenSubscription = await getPaymentToken(cardData, { reuse: true })
+          }
+          if (pagaImplantacaoNoCartao) {
+            payload.paymentToken = await getPaymentToken(cardData, { reuse: false })
+          }
+        } catch (tokenErr) {
+          setError(tokenErr.message || 'Não foi possível processar o cartão. Confira os dados e tente de novo.')
+          return
+        }
+        payload.cpf = card.cpf
+        payload.birth = card.birth
+        payload.billingAddress = {
+          zipcode: card.zipcode, street: card.street, number: card.number_addr,
+          neighborhood: card.neighborhood, city: card.city, state: card.state,
+        }
       }
 
       const res = await fetch(`${API}/signup`, {
