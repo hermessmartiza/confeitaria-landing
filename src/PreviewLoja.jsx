@@ -16,7 +16,20 @@ const PREVIEW_URL = import.meta.env.VITE_PREVIEW_URL || '/_preview'
 export default function PreviewLoja({ nome, brandColor, logoUrl, slug }) {
   const iframeRef = useRef(null)
   const [pronto, setPronto] = useState(false)
+  const [carregou, setCarregou] = useState(false)
   const [dispositivo, setDispositivo] = useState('desktop')
+
+  // src calculado UMA vez: os valores iniciais vão na query pra primeira pintura
+  // já sair certa. Recalcular a cada tecla recarregaria o iframe e faria a tela
+  // piscar — as atualizações seguintes vão por postMessage.
+  const [src] = useState(() => {
+    const q = new URLSearchParams()
+    if (nome) q.set('name', nome)
+    if (brandColor) q.set('brandColor', brandColor)
+    if (logoUrl) q.set('logoUrl', logoUrl)
+    const qs = q.toString()
+    return qs ? `${PREVIEW_URL}?${qs}` : PREVIEW_URL
+  })
 
   // O iframe avisa quando montou; antes disso qualquer postMessage se perde.
   useEffect(() => {
@@ -58,12 +71,12 @@ export default function PreviewLoja({ nome, brandColor, logoUrl, slug }) {
         </div>
         <iframe
           ref={iframeRef}
-          src={PREVIEW_URL}
+          src={src}
           title="Prévia da sua loja"
-          loading="lazy"
+          onLoad={() => setCarregou(true)}
           sandbox="allow-scripts allow-same-origin"
         />
-        {!pronto && <div className="signup-preview-carregando">Montando sua loja...</div>}
+        {!carregou && <div className="signup-preview-carregando">Montando sua loja...</div>}
       </div>
 
       <p className="signup-preview-nota">
