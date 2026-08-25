@@ -308,3 +308,25 @@
   .cad-barra-fill { transition: none; }
   .cad-opcao:hover, .cad-avancar:hover:not(:disabled) { transform: none; }
 }
+
+/* Aviso de email já cadastrado — na primeira pergunta, não na última etapa. */
+.cad-email-status {
+  margin-top: 11px;
+  padding: 11px 14px;
+  border-radius: 11px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  animation: cad-entra 0.25s ease;
+}
+.cad-email-status.checando { color: rgba(42, 21, 32, 0.45); padding: 4px 0; }
+.cad-email-status.retomavel {
+  background: rgba(255, 209, 102, 0.16);
+  border: 1px solid rgba(232, 147, 58, 0.35);
+  color: #7a4a12;
+}
+.cad-email-status.em_uso {
+  background: rgba(214, 69, 69, 0.07);
+  border: 1px solid rgba(214, 69, 69, 0.28);
+  color: #a72f2f;
+}
+.cad-email-status a { color: inherit; font-weight: 700; }

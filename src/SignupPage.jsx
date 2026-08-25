@@ -71,6 +71,8 @@ export default function SignupPage() {
   const [slug, setSlug] = useState('')
   const [slugEditado, setSlugEditado] = useState(false)
   const [erro, setErro] = useState(null)
+  // null | 'checando' | 'livre' | 'retomavel' | 'em_uso'
+  const [emailStatus, setEmailStatus] = useState(null)
   const [tremendo, setTremendo] = useState(false)
   const [saindo, setSaindo] = useState(false)
   const inputRef = useRef(null)
@@ -114,6 +116,25 @@ export default function SignupPage() {
     return pergunta ? (respostas[pergunta.id] || '') : ''
   }
 
+  // Checa o email na PRIMEIRA pergunta. Antes, quem já tinha conta só descobria
+  // no fim, depois de escolher endereço, plano e forma de pagamento — e o erro
+  // ainda era um beco sem saída.
+  useEffect(() => {
+    const email = (respostas.email || '').trim()
+    if (pergunta?.id !== 'email' || !email.includes('@') || !email.includes('.')) {
+      setEmailStatus(null)
+      return
+    }
+    setEmailStatus('checando')
+    const t = setTimeout(() => {
+      fetch(`${API}/signup/check-email?email=${encodeURIComponent(email)}`)
+        .then((r) => r.json())
+        .then((d) => setEmailStatus(d.status))
+        .catch(() => setEmailStatus(null))
+    }, 500)
+    return () => clearTimeout(t)
+  }, [respostas.email, pergunta])
+
   function digitar(v) {
     const valor = pergunta.mascara ? pergunta.mascara(v) : v
     setRespostas((r) => ({ ...r, [pergunta.id]: valor }))
@@ -130,6 +151,9 @@ export default function SignupPage() {
     if (etapa < perguntas.length) {
       const msg = pergunta.validar(valorAtual())
       if (msg) return errar(msg)
+      if (pergunta.id === 'email' && emailStatus === 'em_uso') {
+        return errar('Esse email já tem uma loja. Entre na sua conta ou use outro email pra criar uma segunda.')
+      }
       // Lead gravado assim que temos email: quem desiste no meio vira contato
       // em vez de sumir sem deixar rastro.
       if (pergunta.id === 'email') {
@@ -205,6 +229,21 @@ export default function SignupPage() {
                   {[0, 1, 2, 3].map((i) => (
                     <span key={i} className={`cad-forca-barra${i < forca ? ` nivel-${forca}` : ''}`} />
                   ))}
+                </div>
+              )}
+
+              {pergunta.id === 'email' && emailStatus && !['livre', 'invalido', 'desconhecido'].includes(emailStatus) && (
+                <div className={`cad-email-status ${emailStatus}`} aria-live="polite">
+                  {emailStatus === 'checando' && <span>Conferindo...</span>}
+                  {emailStatus === 'retomavel' && (
+                    <span>Você já começou um cadastro com este email — use a mesma senha pra continuar de onde parou.</span>
+                  )}
+                  {emailStatus === 'em_uso' && (
+                    <span>
+                      Esse email já tem uma loja no Confeitto. Use outro email pra abrir uma segunda,
+                      ou entre no painel da loja que você já tem.
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -352,7 +391,17 @@ function EtapaPagamento({ dados, onVoltar }) {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
       })
       const body = await res.json()
-      if (!res.ok) { setErro(body.error || 'Não foi possível criar sua conta.'); return }
+      if (!res.ok) {
+        // O 409 de email só chega aqui se a checagem da pergunta 1 falhou (rede)
+        // ou se a conta foi criada nesse meio-tempo. Em vez de travar na última
+        // etapa, devolve a pessoa pro campo que precisa mudar.
+        if (res.status === 409 && /email/i.test(body.error || '')) {
+          setErro('Esse email já tem uma loja. Volte e use outro — o resto das suas respostas fica guardado.')
+          return
+        }
+        setErro(body.error || 'Não foi possível criar sua conta.')
+        return
+      }
       trackFunnel('signup_started', body.slug)
       setResultado(body)
     } finally { setEnviando(false) }
