@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-const API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza.com.br/api'
+export const API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza.com.br/api'
 const WHATSAPP = 'https://wa.me/554197601739'
 
-const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
+export const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
 
 // Loja = path no domínio único (ex: dominio.com/minha-loja), não subdomínio.
 // Se VITE_STORE_BASE_DOMAIN não for setado no build, deriva do próprio host
@@ -35,7 +35,7 @@ export function trackFunnel(step, slug) {
   }).catch(() => {})
 }
 
-function slugify(text) {
+export function slugify(text) {
   return text
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -44,7 +44,7 @@ function slugify(text) {
     .slice(0, 30)
 }
 
-function useSlugCheck(slug) {
+export function useSlugCheck(slug) {
   const [status, setStatus] = useState(null) // null | 'checking' | 'available' | 'taken' | { error }
   useEffect(() => {
     if (!slug || slug.length < 3) { setStatus(null); return }
@@ -90,7 +90,7 @@ function loadEfiScript() {
   })
 }
 
-function useCardTokenization() {
+export function useCardTokenization() {
   const [efiConfig, setEfiConfig] = useState(null)
   useEffect(() => {
     fetch(`${API}/signup/efi-public-config`).then(r => r.json()).then(setEfiConfig).catch(() => {})
@@ -136,7 +136,7 @@ function useCardTokenization() {
   return { getPaymentToken, ready: !!efiConfig }
 }
 
-function detectBrand(number) {
+export function detectBrand(number) {
   const n = number.replace(/\D/g, '')
   if (/^4/.test(n)) return 'visa'
   if (/^5[1-5]/.test(n)) return 'mastercard'
@@ -148,7 +148,7 @@ function detectBrand(number) {
   return 'visa' // fallback — o SDK recusa se estiver errado, não é um dado sensível
 }
 
-function SlugField({ slug, onChange }) {
+export function SlugField({ slug, onChange }) {
   const status = useSlugCheck(slug)
   return (
     <div className="signup-field">
@@ -175,7 +175,7 @@ function SlugField({ slug, onChange }) {
 
 const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
 
-const soDigitos = (v) => String(v || '').replace(/\D/g, '')
+export const soDigitos = (v) => String(v || '').replace(/\D/g, '')
 
 const mascaraCartao = (v) => soDigitos(v).slice(0, 19).replace(/(\d{4})(?=\d)/g, '$1 ').trim()
 const mascaraCpf = (v) => {
@@ -219,7 +219,7 @@ function cartaoValido(valor) {
   return soma % 10 === 0
 }
 
-function CardFields({ card, onChange, erros = {} }) {
+export function CardFields({ card, onChange, erros = {} }) {
   const [buscandoCep, setBuscandoCep] = useState(false)
   const [erroCep, setErroCep] = useState(null)
   const set = (key, transform) => (e) => onChange({ ...card, [key]: transform ? transform(e.target.value) : e.target.value })
@@ -344,7 +344,7 @@ const EMPTY_CARD = {
 }
 
 /** Registra/atualiza o lead. Silencioso de propósito: se falhar, o funil segue. */
-function registrarLead(payload) {
+export function registrarLead(payload) {
   return fetch(`${API}/signup/lead`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -354,601 +354,8 @@ function registrarLead(payload) {
 
 const PASSOS = ['Conta', 'Loja', 'Pagamento']
 
-function Stepper({ atual }) {
-  return (
-    <ol className="signup-stepper" aria-label={`Passo ${atual + 1} de ${PASSOS.length}`}>
-      {PASSOS.map((label, i) => (
-        <li
-          key={label}
-          className={`signup-step${i === atual ? ' active' : ''}${i < atual ? ' done' : ''}`}
-          aria-current={i === atual ? 'step' : undefined}
-        >
-          <span className="signup-step-dot">{i < atual ? '✓' : i + 1}</span>
-          <span className="signup-step-label">{label}</span>
-        </li>
-      ))}
-    </ol>
-  )
-}
-
-// Checkout em 3 passos em vez de uma tela só com 15 campos (incluindo cartão),
-// que afundava a conversão. O 1º passo registra o lead ANTES do pagamento —
-// quem desiste no meio vira contato em vez de sumir sem deixar rastro.
-function FormStep({ onSubmit, submitting, error, presetStore }) {
-  const [passo, setPasso] = useState(0)
-  const [form, setForm] = useState({
-    name: '', email: '', phone: '', password: '',
-    storeName: presetStore?.name || '', slug: presetStore?.slug || '',
-    paymentMethod: 'CARD', subscriptionMethod: 'CARD', marketingConsent: false,
-    brandColor: '', logoUrl: '', couponCode: '',
-  })
-  // Só entra em form.couponCode depois que o backend validou — nunca mandamos
-  // código digitado direto, senão o signup falha lá na frente com o cartão já
-  // tokenizado.
-  const [cupom, setCupom] = useState('')
-  const [cupomInfo, setCupomInfo] = useState(null)
-  const [cupomErro, setCupomErro] = useState(null)
-  const [cupomCarregando, setCupomCarregando] = useState(false)
-  const [logoUploading, setLogoUploading] = useState(false)
-  const [logoError, setLogoError] = useState(null)
-  // Plano padrão só pra MOSTRAR os valores e o desconto do PIX — quem decide
-  // o preço cobrado é o backend, isto aqui é vitrine.
-  const [plano, setPlano] = useState(null)
-
-  useEffect(() => {
-    fetch(`${API}/signup/plans`)
-      .then((r) => r.json())
-      .then((planos) => setPlano(planos.find((p) => p.isDefault) || planos[0] || null))
-      .catch(() => {})
-  }, [])
-
-  async function aplicarCupom() {
-    const code = cupom.trim()
-    if (!code) return
-    setCupomCarregando(true)
-    setCupomErro(null)
-    try {
-      const qs = new URLSearchParams({ code, ...(plano ? { planId: plano.id } : {}) })
-      const r = await fetch(`${API}/signup/validate-coupon?${qs}`)
-      const body = await r.json()
-      if (!r.ok) {
-        setCupomInfo(null)
-        setForm((f) => ({ ...f, couponCode: '' }))
-        setCupomErro(body?.error || 'Cupom inválido')
-        return
-      }
-      setCupomInfo(body)
-      setForm((f) => ({ ...f, couponCode: body.code }))
-    } catch {
-      setCupomErro('Não foi possível validar o cupom agora. Tente de novo.')
-    } finally {
-      setCupomCarregando(false)
-    }
-  }
-
-  function removerCupom() {
-    setCupom('')
-    setCupomInfo(null)
-    setCupomErro(null)
-    setForm((f) => ({ ...f, couponCode: '' }))
-  }
-
-  // Cupom e desconto do PIX ACUMULAM: o cupom abate o valor fixo primeiro e o
-  // percentual do PIX incide sobre o que sobrou. Quando há cupom validado os
-  // números vêm prontos do backend — aqui não se recalcula nada, só exibe.
-  const setupCartao = cupomInfo ? cupomInfo.setupFeeComCupom : plano?.setupFee
-  const setupPix = cupomInfo
-    ? cupomInfo.setupFeeCupomMaisPix
-    : (plano ? plano.setupFee * (1 - (plano.pixDiscountPercent || 0) / 100) : null)
-
-  // Cartão é pedido se QUALQUER uma das duas cobranças for no cartão. Com as
-  // duas no PIX o cadastro não precisa de número, CVV, CPF nem endereço de
-  // cobrança — são 12 campos que existiam só pra montar a recorrência.
-  const precisaCartao = form.paymentMethod === 'CARD' || form.subscriptionMethod === 'CARD'
-
-  async function onLogoSelected(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setLogoError(null)
-    setLogoUploading(true)
-    try {
-      const body = new FormData()
-      body.append('logo', file)
-      const r = await fetch(`${API}/signup/logo`, { method: 'POST', body })
-      const data = await r.json()
-      if (!r.ok) throw new Error(data.error || 'Falha ao enviar a logo')
-      setForm((f) => ({ ...f, logoUrl: data.url }))
-    } catch (err) {
-      setLogoError(err.message)
-    } finally {
-      setLogoUploading(false)
-    }
-  }
-  const [card, setCard] = useState(EMPTY_CARD)
-  const [erroPasso, setErroPasso] = useState(null)
-  const [errosCartao, setErrosCartao] = useState({})
-  const slugStatus = useSlugCheck(form.slug)
-
-  const set = (key) => (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-    setForm((f) => {
-      const next = { ...f, [key]: value }
-      if (key === 'storeName' && !f.slugTouched) next.slug = slugify(value)
-      return next
-    })
-  }
-
-  function avancarDaConta(e) {
-    e.preventDefault()
-    setErroPasso(null)
-    if (form.password.length < 8) return setErroPasso('A senha precisa de ao menos 8 caracteres.')
-    // Validado aqui porque é aqui que a pessoa digita. Antes isso morava no
-    // passo "Loja": o erro aparecia dois passos depois do campo, apontando pra
-    // um campo que nem estava na tela.
-    if (!/\S+\s+\S+/.test(form.name.trim())) {
-      return setErroPasso('Informe seu nome completo (nome e sobrenome).')
-    }
-    if (/\d/.test(form.name)) return setErroPasso('O nome não deve conter números.')
-    // DDD + 8 ou 9 dígitos. Barra o "asqwe2313" que chegou de um cadastro real.
-    const tel = soDigitos(form.phone)
-    if (tel.length < 10 || tel.length > 11) return setErroPasso('WhatsApp inválido. Use DDD + número, ex: (41) 99999-9999.')
-    if (/^(\d)\1+$/.test(tel)) return setErroPasso('WhatsApp inválido.')
-    // Lead gravado aqui: a partir deste ponto a pessoa não se perde mais.
-    registrarLead({ email: form.email, marketingConsent: form.marketingConsent, step: 'conta' })
-    trackFunnel('signup_step_conta')
-    // Conversão de loja de apresentação: nome/slug já existem (a loja já está
-    // no ar) — pula direto pro pagamento, sem passar pelo passo "Loja".
-    if (presetStore) {
-      setPasso(2)
-      return
-    }
-    setPasso(1)
-  }
-
-  function avancarDaLoja(e) {
-    e.preventDefault()
-    setErroPasso(null)
-    // useSlugCheck devolve 'available', 'checking', null, ou a mensagem de erro
-    // vinda do backend (slug reservado/inválido) — qualquer outra coisa barra.
-    if (slugStatus === 'checking') return setErroPasso('Verificando o endereço, aguarde um instante.')
-    if (slugStatus && slugStatus !== 'available') {
-      return setErroPasso(slugStatus === 'taken' ? 'Esse endereço já está em uso. Escolha outro.' : String(slugStatus))
-    }
-    if (!form.slug || form.slug.length < 3) return setErroPasso('Escolha o endereço da sua loja.')
-    registrarLead({
-      email: form.email, marketingConsent: form.marketingConsent, step: 'loja',
-      name: form.name, phone: form.phone, storeName: form.storeName, slug: form.slug,
-    })
-    trackFunnel('signup_step_loja')
-    setPasso(2)
-  }
-
-  // Cada erro barrado aqui é uma tentativa a menos queimada no gateway — e uma
-  // mensagem clara em vez do erro cru da Efí.
-  function validarCartao() {
-    const e = {}
-    if (!cartaoValido(card.number)) e.number = 'Número de cartão inválido. Confira os dígitos.'
-    const mes = Number(card.expirationMonth)
-    const ano = Number(card.expirationYear)
-    const agora = new Date()
-    if (!(mes >= 1 && mes <= 12)) e.validade = 'Mês de validade inválido (use 01 a 12).'
-    else if (!(ano >= agora.getFullYear() && ano <= agora.getFullYear() + 25)) e.validade = 'Ano de validade inválido.'
-    else if (ano === agora.getFullYear() && mes < agora.getMonth() + 1) e.validade = 'Este cartão já venceu.'
-    if (card.cvv.length < 3) e.validade = e.validade || 'CVV incompleto.'
-    if (!cpfValido(card.cpf)) e.cpf = 'CPF inválido. Confira os números.'
-    if (!card.birth) e.birth = 'Informe a data de nascimento.'
-    else {
-      const idade = (Date.now() - new Date(card.birth).getTime()) / (365.25 * 24 * 3600 * 1000)
-      if (idade < 18) e.birth = 'O titular do cartão precisa ter 18 anos ou mais.'
-      if (idade > 120) e.birth = 'Data de nascimento inválida.'
-    }
-    if (soDigitos(card.zipcode).length !== 8) e.endereco = 'CEP incompleto.'
-    else if (!card.street || !card.neighborhood || !card.city || !card.state) e.endereco = 'Complete o endereço de cobrança.'
-    else if (!card.number_addr) e.endereco = 'Informe o número do endereço.'
-    return e
-  }
-
-  function enviar(e) {
-    e.preventDefault()
-    // Sem cartão no fluxo não há o que validar — validarCartao() cobra número,
-    // CVV, CPF e endereço, e travaria o envio de quem escolheu PIX nas duas
-    // cobranças sem nunca ter visto um campo de cartão.
-    if (precisaCartao) {
-      const erros = validarCartao()
-      setErrosCartao(erros)
-      if (Object.keys(erros).length > 0) return
-    }
-
-    registrarLead({
-      email: form.email, marketingConsent: form.marketingConsent, step: 'pagamento',
-      name: form.name, phone: form.phone, storeName: form.storeName, slug: form.slug,
-    })
-    onSubmit(form, card)
-  }
-
-  // Em conversão de loja de apresentação o passo "Loja" (1) não existe —
-  // voltar do pagamento (2) tem que cair direto na conta (0), não nele.
-  const voltar = () => { setErroPasso(null); setPasso((p) => (presetStore && p === 2 ? 0 : p - 1)) }
-
-  return (
-    <div className="signup-wizard">
-      <h3>Vamos criar sua loja</h3>
-      <p className="signup-sub">Leva 2 minutos. Sua loja fica no ar assim que o pagamento confirmar.</p>
-
-      <Stepper atual={passo} />
-
-      {passo === 0 && (
-        <form className="signup-form" onSubmit={avancarDaConta}>
-          {presetStore && (
-            <p className="signup-hint" style={{ marginBottom: 16 }}>
-              Ativando a versão completa de <strong>{presetStore.name}</strong> ({presetStore.slug}).
-            </p>
-          )}
-          <div className="signup-field">
-            <label htmlFor="signup-email">Seu email</label>
-            <input id="signup-email" type="email" value={form.email} onChange={set('email')} autoFocus required />
-          </div>
-          <div className="signup-field">
-            <label htmlFor="signup-password">Crie uma senha</label>
-            <input id="signup-password" type="password" minLength={8} value={form.password} onChange={set('password')} required />
-            <p className="signup-hint">Mínimo de 8 caracteres. É com ela que você entra no painel da sua loja.</p>
-          </div>
-
-          {/* Nome e WhatsApp são sobre a PESSOA, então moram aqui nos dois
-              fluxos. Antes só apareciam na conversão de loja de apresentação
-              (presetStore) e, no cadastro normal, só lá no passo "Loja" — o
-              que misturava dados do dono com dados da confeitaria. */}
-          <div className="signup-field">
-            <label htmlFor="signup-name">Seu nome completo</label>
-            <input id="signup-name" value={form.name} onChange={set('name')} placeholder="Nome e sobrenome" required />
-          </div>
-          <div className="signup-field">
-            <label htmlFor="signup-phone">Seu WhatsApp (com DDD)</label>
-            <input id="signup-phone" type="tel" inputMode="numeric" autoComplete="tel" value={form.phone}
-              onChange={(e) => {
-                const d = soDigitos(e.target.value).slice(0, 11)
-                const fmt = d.length > 10 ? d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
-                  : d.length > 6 ? d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
-                  : d.length > 2 ? d.replace(/(\d{2})(\d*)/, '($1) $2') : d
-                setForm((f) => ({ ...f, phone: fmt }))
-              }}
-              placeholder="(41) 99999-9999" required />
-          </div>
-
-          <label className="signup-check">
-            <input type="checkbox" checked={form.marketingConsent} onChange={set('marketingConsent')} />
-            <span>Quero receber novidades, dicas de vendas e ofertas por email.</span>
-          </label>
-
-          {erroPasso && <p className="signup-error">{erroPasso}</p>}
-
-          <button className="btn btn-primary btn-big signup-submit" type="submit">Continuar</button>
-          <p className="signup-alt">
-            Prefere falar com a gente antes? <a href={WHATSAPP} target="_blank" rel="noopener noreferrer">Chama no WhatsApp</a>
-          </p>
-        </form>
-      )}
-
-      {passo === 1 && (
-        <form className="signup-form" onSubmit={avancarDaLoja}>
-          <div className="signup-field">
-            <label htmlFor="signup-storeName">Nome da confeitaria</label>
-            <input id="signup-storeName" value={form.storeName} onChange={set('storeName')} placeholder="Ex: Doce Encanto" autoFocus required />
-          </div>
-
-          <SlugField slug={form.slug} onChange={(v) => setForm((f) => ({ ...f, slug: v, slugTouched: true }))} />
-
-
-          <div className="signup-field">
-            <label htmlFor="signup-brandColor">Cor da sua marca <span className="signup-optional">(opcional)</span></label>
-            <div className="signup-color-row">
-              <input id="signup-brandColor" type="color"
-                value={form.brandColor || '#b84a5a'}
-                onChange={(e) => setForm((f) => ({ ...f, brandColor: e.target.value }))} />
-              {form.brandColor && (
-                <button type="button" className="signup-color-clear" onClick={() => setForm((f) => ({ ...f, brandColor: '' }))}>
-                  Usar cor padrão
-                </button>
-              )}
-            </div>
-            <p className="signup-hint">Não precisa escolher agora — dá pra mudar depois no painel.</p>
-          </div>
-
-          <div className="signup-field">
-            <label htmlFor="signup-logo">Logo da sua confeitaria <span className="signup-optional">(opcional)</span></label>
-            <input id="signup-logo" type="file" accept="image/*" onChange={onLogoSelected} disabled={logoUploading} />
-            {logoUploading && <p className="signup-hint">Enviando...</p>}
-            {form.logoUrl && !logoUploading && (
-              <div className="signup-logo-preview">
-                <img src={form.logoUrl} alt="Prévia da logo" />
-                <span>Logo enviada ✓</span>
-              </div>
-            )}
-            {logoError && <p className="signup-error">{logoError}</p>}
-            <p className="signup-hint">Também dá pra subir depois, direto no painel.</p>
-          </div>
-
-          {erroPasso && <p className="signup-error">{erroPasso}</p>}
-
-          <div className="signup-nav">
-            <button className="btn btn-ghost" type="button" onClick={voltar}>Voltar</button>
-            <button className="btn btn-primary" type="submit">Continuar</button>
-          </div>
-        </form>
-      )}
-
-      {passo === 2 && (
-        <form className="signup-form" onSubmit={enviar}>
-          <div className="signup-field">
-            <label>Cupom de desconto (opcional)</label>
-            {cupomInfo ? (
-              <div className="signup-cupom-ok">
-                <span><strong>{cupomInfo.code}</strong> — {moeda(cupomInfo.discountAmount)} de desconto na implantação</span>
-                <button type="button" className="signup-cupom-remove" onClick={removerCupom}>remover</button>
-              </div>
-            ) : (
-              <div className="signup-cupom-row">
-                <input
-                  value={cupom}
-                  onChange={(e) => setCupom(e.target.value.toUpperCase())}
-                  placeholder="Digite o código"
-                  autoComplete="off"
-                />
-                <button type="button" className="signup-cupom-btn" onClick={aplicarCupom} disabled={cupomCarregando || !cupom.trim()}>
-                  {cupomCarregando ? 'Validando...' : 'Aplicar'}
-                </button>
-              </div>
-            )}
-            {cupomErro && <p className="signup-cupom-erro">{cupomErro}</p>}
-            {cupomInfo && (
-              <p className="signup-hint">
-                De {moeda(cupomInfo.setupFee)} por {moeda(cupomInfo.setupFeeComCupom)}
-                {cupomInfo.pixDiscountPercent > 0 && ` — ou ${moeda(cupomInfo.setupFeeCupomMaisPix)} pagando no PIX, somando os ${cupomInfo.pixDiscountPercent}% de desconto`}.
-              </p>
-            )}
-          </div>
-
-          <div className="signup-field">
-            <label>Como quer pagar a implantação?</label>
-            <div className="signup-paymethods">
-              <button type="button"
-                className={`signup-paymethod${form.paymentMethod === 'CARD' ? ' ativo' : ''}`}
-                onClick={() => setForm((f) => ({ ...f, paymentMethod: 'CARD' }))}>
-                <strong>💳 Cartão</strong>
-                {plano && (
-                  cupomInfo
-                    ? <span>{moeda(setupCartao)} <em>cupom</em></span>
-                    : <span>{moeda(plano.setupFee)}</span>
-                )}
-              </button>
-              <button type="button"
-                className={`signup-paymethod${form.paymentMethod === 'PIX' ? ' ativo' : ''}`}
-                onClick={() => setForm((f) => ({ ...f, paymentMethod: 'PIX' }))}>
-                <strong>⚡ PIX</strong>
-                {plano && (
-                  plano.pixDiscountPercent > 0 || cupomInfo
-                    ? <span>{moeda(setupPix)} {plano.pixDiscountPercent > 0 && <em>{plano.pixDiscountPercent}% off{cupomInfo ? ' + cupom' : ''}</em>}</span>
-                    : <span>{moeda(plano.setupFee)}</span>
-                )}
-              </button>
-            </div>
-            <p className="signup-hint">
-              {form.paymentMethod === 'PIX'
-                ? 'Você paga a implantação por PIX e sua loja entra no ar assim que o pagamento cair.'
-                : 'A implantação é cobrada agora no cartão.'}
-            </p>
-          </div>
-
-          <div className="signup-field">
-            <label>E a mensalidade{plano ? ` de ${moeda(plano.monthlyFee)}` : ''}?</label>
-            <div className="signup-paymethods">
-              <button type="button"
-                className={`signup-paymethod${form.subscriptionMethod === 'CARD' ? ' ativo' : ''}`}
-                onClick={() => setForm((f) => ({ ...f, subscriptionMethod: 'CARD' }))}>
-                <strong>💳 Cartão</strong>
-                <span>Renova sozinha</span>
-              </button>
-              <button type="button"
-                className={`signup-paymethod${form.subscriptionMethod === 'PIX' ? ' ativo' : ''}`}
-                onClick={() => setForm((f) => ({ ...f, subscriptionMethod: 'PIX' }))}>
-                <strong>⚡ PIX</strong>
-                <span>Você paga todo mês</span>
-              </button>
-            </div>
-            <p className="signup-hint">
-              {form.subscriptionMethod === 'CARD'
-                ? 'A cobrança entra sozinha no cartão todo mês. Dá pra cancelar quando quiser, direto no painel.'
-                : 'Todo mês a gente te manda um PIX pra pagar. Sua loja fica no ar normalmente — só não deixe vencer, porque depois de 15 dias em atraso o acesso é bloqueado (nada é apagado).'}
-            </p>
-          </div>
-
-          {/* Cartão só aparece pra quem vai usar cartão em alguma das duas
-              cobranças. Tudo no PIX = 12 campos a menos no cadastro. */}
-          {precisaCartao && <CardFields card={card} onChange={setCard} erros={errosCartao} />}
-
-          {error && <p className="signup-error">{error}</p>}
-
-          <div className="signup-nav">
-            <button className="btn btn-ghost" type="button" onClick={voltar} disabled={submitting}>Voltar</button>
-            <button className="btn btn-primary btn-big signup-submit" type="submit" disabled={submitting}>
-              {submitting ? 'Criando...' : 'Finalizar e criar minha loja 🚀'}
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
-  )
-}
-
-function PaymentStep({ signup }) {
-  const [status, setStatus] = useState('PENDING_PAYMENT')
-  const pollRef = useRef(null)
-
-  useEffect(() => {
-    pollRef.current = setInterval(() => {
-      fetch(`${API}/signup/${signup.subscriptionId}/status`)
-        .then(r => r.json())
-        .then(d => setStatus(d.status))
-        .catch(() => {})
-    }, 3000)
-    return () => clearInterval(pollRef.current)
-  }, [signup.subscriptionId])
-
-  if (status === 'ACTIVE') return null // App troca pra SuccessStep
-
-  return (
-    <div className="signup-payment">
-      <h3>Falta só o pagamento</h3>
-      <p className="signup-sub">
-        R$ {signup.setupFee} de implantação (única vez). Assim que confirmar, sua loja vai pro ar sozinha.
-      </p>
-      {signup.payment?.qrCode ? (
-        <>
-          <p className="signup-qr-label">Escaneie o QR code no seu banco</p>
-          <img className="signup-qr-image" src={signup.payment.qrCode} alt="QR code do PIX" />
-          <textarea className="signup-copypaste" readOnly value={signup.payment.pixCopyPaste || ''} onFocus={(e) => e.target.select()} />
-        </>
-      ) : (
-        <p className="signup-error">
-          Não conseguimos gerar o PIX agora. {signup.payment?.error || 'Tente novamente em instantes.'}
-          {' '}Se persistir, <a href={WHATSAPP} target="_blank" rel="noopener noreferrer">fala com a gente no WhatsApp</a>.
-        </p>
-      )}
-      <p className="signup-waiting">
-        <span className="signup-spinner" aria-hidden="true" /> Aguardando confirmação do pagamento...
-      </p>
-    </div>
-  )
-}
-
-function SuccessStep({ signup }) {
-  const storeUrl = `https://${STORE_BASE_DOMAIN}/${signup.slug}`
-  return (
-    <div className="signup-success">
-      <div className="signup-success-emoji">🎉</div>
-      <h3>Sua loja está no ar!</h3>
-      <p className="signup-sub">{storeUrl}</p>
-      <a className="btn btn-primary btn-big" href={storeUrl} target="_blank" rel="noopener noreferrer">
-        Ir para minha loja
-      </a>
-    </div>
-  )
-}
-
-export default function SignupModal({ open, onClose, presetStore }) {
-  const [step, setStep] = useState('form')
-  const [signup, setSignup] = useState(null)
-  const [error, setError] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-  const { getPaymentToken } = useCardTokenization()
-
-  useEffect(() => {
-    if (!open) { setStep('form'); setSignup(null); setError(null) }
-  }, [open])
-
-  useEffect(() => {
-    if (step === 'payment' && signup) {
-      const t = setInterval(() => {
-        fetch(`${API}/signup/${signup.subscriptionId}/status`)
-          .then(r => r.json())
-          .then(d => {
-            if (d.status === 'ACTIVE') {
-              clearInterval(t)
-              trackFunnel('signup_paid', signup.slug)
-              trackFunnel('signup_provisioned', signup.slug)
-              setStep('success')
-            }
-          })
-          .catch(() => {})
-      }, 3000)
-      return () => clearInterval(t)
-    }
-  }, [step, signup])
-
-  if (!open) return null
-
-  async function handleSubmit(form, card) {
-    setSubmitting(true)
-    setError(null)
-    try {
-      const payload = {
-        email: form.email, password: form.password, name: form.name, phone: form.phone, storeName: form.storeName, slug: form.slug,
-        ...(form.brandColor ? { brandColor: form.brandColor } : {}),
-        ...(form.logoUrl ? { logoUrl: form.logoUrl } : {}),
-        ...(form.couponCode ? { couponCode: form.couponCode } : {}),
-      }
-
-      const pagaImplantacaoNoCartao = form.paymentMethod === 'CARD'
-      const mensalidadeNoCartao = form.subscriptionMethod === 'CARD'
-      payload.paymentMethod = pagaImplantacaoNoCartao ? 'CARD' : 'PIX'
-      payload.subscriptionMethod = mensalidadeNoCartao ? 'CARD' : 'PIX'
-
-      // Só tokeniza o que vai ser usado. Com as duas cobranças no PIX não há
-      // cartão preenchido — tokenizar aqui chamaria a Efí com campos vazios e
-      // devolveria erro de cartão pra quem nunca escolheu cartão.
-      // reuse:true é o token da assinatura recorrente; reuse:false é o da
-      // implantação, cobrança avulsa (30/07/2026).
-      if (pagaImplantacaoNoCartao || mensalidadeNoCartao) {
-        try {
-          const cardData = { ...card, brand: detectBrand(card.number) }
-          if (mensalidadeNoCartao) {
-            payload.paymentTokenSubscription = await getPaymentToken(cardData, { reuse: true })
-          }
-          if (pagaImplantacaoNoCartao) {
-            payload.paymentToken = await getPaymentToken(cardData, { reuse: false })
-          }
-        } catch (tokenErr) {
-          setError(tokenErr.message || 'Não foi possível processar o cartão. Confira os dados e tente de novo.')
-          return
-        }
-        payload.cpf = card.cpf
-        payload.birth = card.birth
-        payload.billingAddress = {
-          zipcode: card.zipcode, street: card.street, number: card.number_addr,
-          neighborhood: card.neighborhood, city: card.city, state: card.state,
-        }
-      }
-
-      const res = await fetch(`${API}/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Não foi possível criar sua conta.'); return }
-      trackFunnel('signup_started', data.slug)
-
-      // Cartão confirma na hora (sem QR pra esperar) — se deu certo, a loja
-      // já está no ar; se falhou, mostra o erro sem avançar de tela.
-      if (form.paymentMethod === 'CARD') {
-        if (!data.payment.ok) {
-          setError(data.payment.error || 'Cartão recusado. Confira os dados e tente de novo.')
-          return
-        }
-        setSignup(data)
-        trackFunnel('signup_paid', data.slug)
-        trackFunnel('signup_provisioned', data.slug)
-        setStep('success')
-        return
-      }
-
-      setSignup(data)
-      setStep('payment')
-    } catch {
-      setError('Falha de conexão. Tente novamente.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  return (
-    <div className="signup-overlay" onClick={onClose}>
-      <div className="signup-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="signup-close" onClick={onClose} aria-label="Fechar">×</button>
-        {step === 'form' && <FormStep onSubmit={handleSubmit} submitting={submitting} error={error} presetStore={presetStore} />}
-        {step === 'payment' && signup && <PaymentStep signup={signup} />}
-        {step === 'success' && signup && <SuccessStep signup={signup} />}
-      </div>
-    </div>
-  )
-}
+// ─── Nota ────────────────────────────────────────────────────────────────────
+// O modal de cadastro que vivia aqui foi substituído pela tela /criar
+// (SignupPage.jsx). Este arquivo virou a casa da lógica compartilhada:
+// tokenização de cartão, máscaras, validações de cartão/CPF/CEP, checagem de
+// slug e registro de lead. Nada aqui renderiza o fluxo — só o alimenta.

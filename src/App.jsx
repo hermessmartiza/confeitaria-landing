@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
-import SignupModal, { trackFunnel } from './SignupFlow'
+import { trackFunnel } from './SignupFlow'
+import SignupPage from './SignupPage'
+import './cadastro.css'
 import { HERO, FEATURES, FEATURES_INTRO, STEPS, PRICING_INCLUDES } from './heroContent'
 
 const WHATSAPP = 'https://wa.me/554197601739'
@@ -491,27 +493,24 @@ function Footer() {
 export default function App() {
   useReveal()
   useEffect(() => { trackFunnel('visit') }, [])
-  const [signupOpen, setSignupOpen] = useState(false)
-  const [presetStore, setPresetStore] = useState(null)
-  const openSignup = () => setSignupOpen(true)
+  // O cadastro virou tela própria (/criar) em vez de modal: formulário longo
+  // dentro de caixinha é o que fazia o fluxo parecer arrastado. Os CTAs viram
+  // navegação de verdade — com URL, histórico e botão voltar funcionando.
+  const openSignup = () => { window.location.href = '/criar' }
 
   // Loja de apresentação virando cliente: o banner na loja (/{slug}) manda
   // pra cá com ?convert=slug. Busca o nome real da loja antes de abrir o
   // modal — sem isso o passo "Loja" apareceria pedindo pra escolher um nome
   // que já existe.
+  // Loja de apresentação virando cliente: o banner na loja (/{slug}) manda
+  // pra cá com ?convert=slug — repassa pra tela de cadastro, que sabe pular a
+  // pergunta do nome (a loja já existe).
   useEffect(() => {
     const slug = new URLSearchParams(window.location.search).get('convert')
-    if (!slug) return
-    fetch(`${SIGNUP_API}/signup/check-slug?slug=${encodeURIComponent(slug)}`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.isPresentation) {
-          setPresetStore({ slug, name: d.storeName })
-          setSignupOpen(true)
-        }
-      })
-      .catch(() => {})
+    if (slug) window.location.href = `/criar?convert=${encodeURIComponent(slug)}`
   }, [])
+
+  if (window.location.pathname.replace(/\/$/, '') === '/criar') return <SignupPage />
 
   return (
     <>
@@ -528,7 +527,6 @@ export default function App() {
         <FinalCTA onSignup={openSignup} />
       </main>
       <Footer />
-      <SignupModal open={signupOpen} onClose={() => setSignupOpen(false)} presetStore={presetStore} />
     </>
   )
 }

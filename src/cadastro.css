@@ -1,0 +1,310 @@
+/* ═══ Tela de cadastro ═══════════════════════════════════════════════════════
+   Uma pergunta por vez. O trilho da esquerda existe pra dar contexto do
+   progresso; no celular ele vira uma faixa fina no topo, porque lá o espaço
+   pertence à pergunta.
+   Todas as animações respeitam prefers-reduced-motion no fim do arquivo. */
+
+.cad-tela {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  background: var(--cream, #fdf8f5);
+  overflow-y: auto;
+}
+.cad-tela-final { grid-template-columns: 1fr; }
+
+/* ── Trilho lateral ── */
+.cad-rail {
+  background: linear-gradient(165deg, #2a1520 0%, #4a2033 55%, #6d2c44 100%);
+  color: #fff;
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.cad-marca {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display, inherit);
+  font-size: 1.25rem; font-weight: 700;
+  color: #fff; text-decoration: none;
+}
+
+.cad-progresso-topo {
+  display: flex; align-items: baseline; gap: 9px; margin-bottom: 9px;
+}
+.cad-progresso-pct { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.cad-progresso-recado { font-size: 0.78rem; opacity: 0.72; }
+
+.cad-barra {
+  height: 7px; border-radius: 99px;
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+.cad-barra-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, #ffd166, #ff8fab);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cad-chips { list-style: none; margin: 22px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.cad-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 9px; border-radius: 9px;
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.cad-chip.atual { background: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; }
+.cad-chip.feito { color: rgba(255, 255, 255, 0.88); }
+.cad-chip-marca {
+  flex-shrink: 0;
+  width: 21px; height: 21px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 0.7rem; font-weight: 700;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+}
+.cad-chip.feito .cad-chip-marca {
+  background: #7fd8a4; border-color: #7fd8a4; color: #1c3d2a;
+  animation: cad-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cad-chip-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes cad-pop { 0% { transform: scale(0.4); } 70% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+.cad-rail-nota { margin-top: auto; font-size: 0.76rem; opacity: 0.6; line-height: 1.5; }
+
+/* ── Resumo (etapa de pagamento) ── */
+.cad-resumo h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.6; margin-bottom: 12px; }
+.cad-resumo-loja { font-family: var(--font-display, inherit); font-size: 1.35rem; font-weight: 700; }
+.cad-resumo-url { font-size: 0.8rem; opacity: 0.6; font-family: ui-monospace, Menlo, monospace; margin-bottom: 20px; }
+.cad-resumo dl { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; }
+.cad-resumo dl > div { display: flex; justify-content: space-between; font-size: 0.87rem; }
+.cad-resumo dt { opacity: 0.68; }
+.cad-resumo dd { margin: 0; font-weight: 600; }
+.cad-resumo-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.87rem;
+}
+.cad-resumo-total strong { font-size: 1.35rem; }
+
+/* ── Palco ── */
+.cad-palco { display: grid; place-items: center; padding: 40px 28px; }
+
+.cad-cartao {
+  width: 100%; max-width: 520px;
+  animation: cad-entra 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cad-cartao.largo { max-width: 620px; }
+.cad-cartao.saindo { animation: cad-sai 0.18s ease forwards; }
+.cad-cartao.tremendo { animation: cad-treme 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+@keyframes cad-entra { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes cad-sai { to { opacity: 0; transform: translateY(-14px); } }
+@keyframes cad-treme {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-7px); }
+  40%, 60% { transform: translateX(7px); }
+}
+
+.cad-contador {
+  display: inline-block;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--rose, #b84a5a);
+  margin-bottom: 12px;
+}
+.cad-titulo {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  line-height: 1.15;
+  color: var(--plum, #2a1520);
+  margin-bottom: 10px;
+}
+.cad-ajuda { color: rgba(42, 21, 32, 0.62); font-size: 0.95rem; line-height: 1.55; margin-bottom: 26px; }
+
+.cad-input {
+  width: 100%;
+  padding: 17px 20px;
+  font-size: 1.2rem;
+  font-family: inherit;
+  border: 2px solid rgba(184, 74, 90, 0.2);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--plum, #2a1520);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.cad-input:focus {
+  outline: none;
+  border-color: var(--rose, #b84a5a);
+  box-shadow: 0 0 0 4px rgba(184, 74, 90, 0.12);
+}
+.cad-input.com-erro { border-color: #d64545; box-shadow: 0 0 0 4px rgba(214, 69, 69, 0.1); }
+
+/* medidor de força da senha */
+.cad-forca { display: flex; gap: 5px; margin-top: 10px; }
+.cad-forca-barra {
+  height: 4px; flex: 1; border-radius: 99px;
+  background: rgba(184, 74, 90, 0.15);
+  transition: background 0.3s ease;
+}
+.cad-forca-barra.nivel-1 { background: #d64545; }
+.cad-forca-barra.nivel-2 { background: #e8933a; }
+.cad-forca-barra.nivel-3 { background: #7fd8a4; }
+.cad-forca-barra.nivel-4 { background: #2f9e70; }
+
+.cad-sugestao {
+  display: block; margin-top: 12px;
+  background: rgba(255, 209, 102, 0.16);
+  border: 1px solid rgba(232, 147, 58, 0.35);
+  border-radius: 10px; padding: 10px 13px;
+  font-size: 0.85rem; font-family: inherit; color: #7a4a12;
+  cursor: pointer; text-align: left; width: 100%;
+}
+
+/* endereço da loja */
+.cad-endereco {
+  display: flex; align-items: center;
+  border: 2px solid rgba(184, 74, 90, 0.2);
+  border-radius: 14px; background: #fff;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.cad-endereco:focus-within { border-color: var(--rose, #b84a5a); box-shadow: 0 0 0 4px rgba(184, 74, 90, 0.12); }
+.cad-endereco.com-erro { border-color: #d64545; }
+.cad-endereco-base {
+  padding: 17px 0 17px 20px;
+  color: rgba(42, 21, 32, 0.42);
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 1.05rem; white-space: nowrap;
+}
+.cad-endereco-input {
+  flex: 1; min-width: 0;
+  border: 0; outline: none; background: transparent;
+  padding: 17px 20px 17px 2px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 1.05rem; font-weight: 600;
+  color: var(--plum, #2a1520);
+}
+.cad-slug-status { min-height: 22px; margin-top: 9px; font-size: 0.85rem; font-weight: 600; }
+.cad-slug-status .conferindo { color: rgba(42, 21, 32, 0.45); }
+.cad-slug-status .livre { color: #2f9e70; }
+.cad-slug-status .ocupado { color: #d64545; }
+
+.cad-erro {
+  margin-top: 12px;
+  color: #c13030; font-size: 0.9rem; font-weight: 600; line-height: 1.45;
+  animation: cad-entra 0.25s ease;
+}
+
+/* ── Blocos da etapa de pagamento ── */
+.cad-bloco { margin-bottom: 24px; }
+.cad-rotulo {
+  display: block; margin-bottom: 10px;
+  font-size: 0.85rem; font-weight: 700; color: var(--plum, #2a1520);
+}
+.cad-opcoes { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.cad-opcao {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 15px 16px;
+  border: 2px solid rgba(184, 74, 90, 0.2);
+  border-radius: 13px; background: #fff;
+  font-family: inherit; text-align: left; cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cad-opcao:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(42, 21, 32, 0.09); }
+.cad-opcao.ativa { border-color: var(--rose, #b84a5a); background: rgba(184, 74, 90, 0.05); }
+.cad-opcao strong { font-size: 1rem; color: var(--plum, #2a1520); }
+.cad-opcao span { font-size: 0.83rem; color: rgba(42, 21, 32, 0.6); }
+.cad-opcao em {
+  align-self: flex-start; margin-top: 3px;
+  background: #7fd8a4; color: #1c3d2a;
+  font-size: 0.68rem; font-weight: 800; font-style: normal;
+  padding: 2px 7px; border-radius: 99px;
+}
+.cad-nota { margin-top: 9px; font-size: 0.81rem; color: rgba(42, 21, 32, 0.58); line-height: 1.5; }
+
+/* ── Ações ── */
+.cad-acoes { display: flex; align-items: center; gap: 12px; margin-top: 28px; }
+.cad-voltar {
+  border: 0; background: none; padding: 12px 4px;
+  font-family: inherit; font-size: 0.9rem; color: rgba(42, 21, 32, 0.55);
+  cursor: pointer;
+}
+.cad-voltar:hover { color: var(--plum, #2a1520); }
+.cad-avancar {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 15px 26px; border: 0; border-radius: 99px;
+  background: var(--rose, #b84a5a); color: #fff;
+  font-family: inherit; font-size: 1rem; font-weight: 700;
+  cursor: pointer; text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+.cad-avancar:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(184, 74, 90, 0.32); }
+.cad-avancar:disabled { opacity: 0.55; cursor: not-allowed; }
+.cad-avancar.destaque { background: linear-gradient(135deg, #b84a5a, #8a1342); }
+.cad-avancar kbd {
+  font-family: inherit; font-size: 0.7rem; font-weight: 600;
+  background: rgba(255, 255, 255, 0.2); padding: 3px 7px; border-radius: 6px;
+}
+
+/* ── Confirmação / festa ── */
+.cad-qr { display: block; width: 220px; height: 220px; margin: 22px auto; border-radius: 12px; }
+.cad-copiar {
+  display: block; margin: 0 auto; border: 0; background: none;
+  font-family: inherit; font-size: 0.87rem; color: var(--rose, #b84a5a);
+  text-decoration: underline; cursor: pointer;
+}
+.cad-aguardando {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  margin-top: 22px; font-size: 0.9rem; color: rgba(42, 21, 32, 0.6);
+}
+.cad-pulso {
+  width: 9px; height: 9px; border-radius: 50%; background: #e8933a;
+  animation: cad-pulsa 1.4s ease-in-out infinite;
+}
+@keyframes cad-pulsa { 0%, 100% { opacity: 0.35; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.15); } }
+
+.cad-festa { text-align: center; position: relative; }
+.cad-selo { font-size: 3.6rem; animation: cad-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cad-festa .cad-avancar { margin: 24px auto 0; }
+.cad-link-secundario {
+  display: block; margin-top: 14px;
+  font-size: 0.88rem; color: rgba(42, 21, 32, 0.55); text-decoration: underline;
+}
+.cad-confete { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.cad-confete i {
+  position: absolute; top: -12px; left: calc(var(--i) * 7.4%);
+  width: 8px; height: 13px; border-radius: 2px;
+  background: hsl(calc(var(--i) * 47), 82%, 62%);
+  animation: cad-cai 2.4s ease-in forwards;
+  animation-delay: calc(var(--i) * 0.09s);
+  opacity: 0;
+}
+@keyframes cad-cai {
+  0% { opacity: 1; transform: translateY(0) rotate(0); }
+  100% { opacity: 0; transform: translateY(360px) rotate(520deg); }
+}
+
+/* ── Celular: o trilho vira faixa e a pergunta manda na tela ── */
+@media (max-width: 860px) {
+  .cad-tela { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .cad-rail { padding: 16px 20px; gap: 12px; }
+  .cad-chips, .cad-rail-nota { display: none; }
+  .cad-resumo dl, .cad-resumo h2 { display: none; }
+  .cad-resumo-loja { font-size: 1.05rem; }
+  .cad-palco { padding: 28px 20px 44px; place-items: start center; }
+  .cad-opcoes { grid-template-columns: 1fr; }
+  .cad-acoes { flex-direction: column-reverse; align-items: stretch; }
+  .cad-avancar { margin-left: 0; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cad-cartao, .cad-selo, .cad-chip.feito .cad-chip-marca, .cad-erro { animation: none; }
+  .cad-confete { display: none; }
+  .cad-barra-fill { transition: none; }
+  .cad-opcao:hover, .cad-avancar:hover:not(:disabled) { transform: none; }
+}

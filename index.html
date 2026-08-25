@@ -64,6 +64,12 @@
       </nav>
     </header>
   </noscript>
+  <!-- /criar renderiza a tela de cadastro, mas o #root chega do servidor com a
+       home pré-renderizada dentro (bom pra SEO e pro primeiro paint da home).
+       Sem isto, quem abre /criar vê a home piscar antes do React montar. Roda
+       antes do primeiro paint e some sozinho quando o React troca o conteúdo. -->
+  <style>html.rota-cadastro #root > header,html.rota-cadastro #root > section,html.rota-cadastro #root > footer,html.rota-cadastro #root > main{display:none!important}</style>
+  <script>if(location.pathname.replace(/\/$/,'')==='/criar')document.documentElement.classList.add('rota-cadastro')</script>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
