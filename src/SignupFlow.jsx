@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 export const API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza.com.br/api'
 const WHATSAPP = 'https://wa.me/554197601739'
+const GOOGLE_ADS_CONVERSION = 'AW-310946501/2SxkCIr-g_AcEMXVopQB'
 
 export const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
 
@@ -33,6 +34,28 @@ export function trackFunnel(step, slug) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ step, sessionId: getSessionId(), slug }),
   }).catch(() => {})
+}
+
+// Conversão do Google Ads: só deve ser chamada depois que o backend confirmar
+// o pagamento e ativar a loja. O transaction_id evita contar duas vezes se o
+// React remontar a tela ou se o usuário repetir uma renderização.
+export function trackGoogleAdsConversion({ value = 1.0, currency = 'BRL', transactionId } = {}) {
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
+
+  const dedupeKey = `confeitto_google_ads_conversion:${transactionId || 'signup'}`
+  try {
+    if (window.sessionStorage.getItem(dedupeKey)) return
+    window.sessionStorage.setItem(dedupeKey, '1')
+  } catch {
+    // O evento ainda pode ser enviado se o navegador bloquear o storage.
+  }
+
+  window.gtag('event', 'conversion', {
+    send_to: GOOGLE_ADS_CONVERSION,
+    value,
+    currency,
+    ...(transactionId ? { transaction_id: transactionId } : {}),
+  })
 }
 
 export function slugify(text) {

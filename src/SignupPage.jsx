@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   API, moeda, slugify, useSlugCheck, useCardTokenization,
-  detectBrand, CardFields, registrarLead, trackFunnel,
+  detectBrand, CardFields, registrarLead, trackFunnel, trackGoogleAdsConversion,
 } from './SignupFlow'
 import { PERGUNTAS, sugestaoEmail, forcaSenha, soDigitos } from './signupPerguntas'
 
@@ -505,6 +505,15 @@ function EtapaPagamento({ dados, onVoltar }) {
 /** QR do PIX ou confirmação do cartão, com polling até a loja subir. */
 function EtapaConfirmacao({ resultado, metodo }) {
   const [status, setStatus] = useState(metodo === 'CARD' ? 'ACTIVE' : 'PENDING_PAYMENT')
+
+  useEffect(() => {
+    if (status !== 'ACTIVE') return
+    trackGoogleAdsConversion({
+      value: 1.0,
+      currency: 'BRL',
+      transactionId: resultado.subscriptionId,
+    })
+  }, [status, resultado.subscriptionId])
 
   useEffect(() => {
     if (status === 'ACTIVE') return
