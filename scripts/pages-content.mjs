@@ -26,7 +26,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Quanto custa?',
-    a: 'Uma taxa única de implantação e uma mensalidade fixa — sem taxa por venda, sem comissão sobre pedido. Os valores atuais aparecem na tela de assinatura durante o cadastro.',
+    a: 'Uma taxa única de implantação e uma mensalidade fixa, nos valores exibidos no cadastro. O Confeitto cobra 0% de comissão sobre o valor das vendas. Em cada pedido online pago, de entrega ou retirada, existe apenas uma taxa fixa de plataforma de R$ 0,50, exibida separadamente ao cliente no checkout e somada à próxima mensalidade. Vendas presenciais no balcão e mesa não pagam essa taxa.',
+  },
+  {
+    q: 'O Confeitto cobra comissão sobre minhas vendas?',
+    a: 'Não. O Confeitto fica com 0% do valor dos seus pedidos. O dinheiro da venda vai para a conta configurada pela sua confeitaria. Em pedidos online pagos existe somente o valor fixo de R$ 0,50 por pedido, mostrado separadamente ao cliente; não é um percentual da sua venda.',
   },
   {
     q: 'Posso cancelar quando quiser?',
@@ -75,7 +79,10 @@ export const TERMOS_SECTIONS = [
     title: '3. Assinatura, cobrança e cancelamento',
     body: `O uso do Confeitto é pago através de uma taxa de implantação (cobrada uma única vez, no cadastro) e
     uma mensalidade recorrente, nos valores vigentes exibidos no momento da contratação. A mensalidade é cobrada
-    automaticamente no método de pagamento escolhido. Você pode cancelar a qualquer momento pelo próprio painel;
+    automaticamente no método de pagamento escolhido. Para cada pedido online pago, de entrega ou retirada, há uma
+    taxa fixa de plataforma de R$ 0,50, que mantém o Confeitto.app sem comissão percentual sobre as vendas,
+    exibida separadamente ao cliente no checkout e incluída na próxima mensalidade;
+    ela não se aplica a vendas presenciais de balcão ou mesa. Você pode cancelar a qualquer momento pelo próprio painel;
     o cancelamento interrompe cobranças futuras e sua loja permanece ativa até o fim do período já pago,
     sem reembolso proporcional do período em curso.`,
   },

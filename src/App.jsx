@@ -1,8 +1,16 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { trackFunnel } from './SignupFlow'
 import SignupPage from './SignupPage'
 import './cadastro.css'
-import { HERO, FEATURES, FEATURES_INTRO, STEPS, PRICING_INCLUDES } from './heroContent'
+import {
+  HERO,
+  HERO_PROOFS,
+  COMPARISON,
+  FEATURES,
+  FEATURES_INTRO,
+  STEPS,
+  PRICING_INCLUDES,
+} from './heroContent'
 
 const WHATSAPP = 'https://wa.me/554197601739'
 const API = 'https://confeitaria.smartiza.com.br/api'
@@ -14,7 +22,7 @@ const SIGNUP_API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza
 
 function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll('.reveal')
+    const observed = new WeakSet()
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -26,8 +34,23 @@ function useReveal() {
       },
       { threshold: 0.12 },
     )
-    els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+
+    const observeReveals = () => {
+      document.querySelectorAll('.reveal').forEach((el) => {
+        if (observed.has(el)) return
+        observed.add(el)
+        io.observe(el)
+      })
+    }
+
+    observeReveals()
+    const mutations = new MutationObserver(observeReveals)
+    mutations.observe(document.body, { childList: true, subtree: true })
+
+    return () => {
+      mutations.disconnect()
+      io.disconnect()
+    }
   }, [])
 }
 
@@ -35,12 +58,17 @@ function Header({ onSignup }) {
   return (
     <header>
       <div className="container header-inner">
-        <div className="logo">
+        <a className="logo" href="/" aria-label="Confeitto — início">
           <img src="/brand/simbolo.svg" alt="Confeitto, sistema de gestão para confeitarias" width="30" height="30" className="logo-mark" fetchPriority="high" />
           <span className="logo-text">Conf<span className="logo-ei">ei</span>tto</span>
-        </div>
-        <button className="header-cta" onClick={onSignup}>
-          Criar minha loja
+        </a>
+        <nav className="header-nav" aria-label="Navegação principal">
+          <a href="#comparativo">Por que mudar</a>
+          <a href="#recursos">Recursos</a>
+          <a href="#oferta">Preço</a>
+        </nav>
+        <button type="button" className="header-cta" onClick={onSignup}>
+          Vender sem comissão
         </button>
       </div>
     </header>
@@ -50,30 +78,92 @@ function Header({ onSignup }) {
 function Hero({ onSignup }) {
   return (
     <section className="hero">
-      <div className="hero-sprinkles" aria-hidden="true">
-        <span style={{ left: '8%', animationDelay: '0s' }}>🍰</span>
-        <span style={{ left: '22%', animationDelay: '2.5s' }}>🧁</span>
-        <span style={{ left: '38%', animationDelay: '1.2s' }}>🍩</span>
-        <span style={{ left: '55%', animationDelay: '3.4s' }}>🎂</span>
-        <span style={{ left: '72%', animationDelay: '0.8s' }}>🍫</span>
-        <span style={{ left: '88%', animationDelay: '2s' }}>🍓</span>
+      <div className="hero-glow hero-glow-one" aria-hidden="true" />
+      <div className="hero-glow hero-glow-two" aria-hidden="true" />
+      <div className="hero-particles" aria-hidden="true">
+        <span>✦</span><span>○</span><span>+</span><span>✦</span><span>●</span>
       </div>
-      <div className="container hero-content">
-        <div className="hero-badge">{HERO.badge}</div>
-        <h1>
-          {HERO.headingBefore}
-          <span className="grad">{HERO.headingGrad1}</span>
-          {HERO.headingMiddle}
-          <span className="grad">{HERO.headingGrad2}</span>
-        </h1>
-        <p>{HERO.paragraph}</p>
-        <div className="hero-actions">
-          <button className="btn btn-light" onClick={onSignup}>
-            {HERO.ctaPrimaryLabel}
-          </button>
-          <a className="btn btn-ghost" href={HERO.ctaSecondaryHref}>
-            {HERO.ctaSecondaryLabel}
-          </a>
+      <div className="container hero-grid">
+        <div className="hero-content">
+          <div className="hero-badge"><span aria-hidden="true">↓</span> {HERO.badge}</div>
+          <div className="hero-eyebrow">{HERO.eyebrow}</div>
+          <h1>
+            {HERO.headingBefore}
+            <span className="grad">{HERO.headingGrad1}</span>
+            {HERO.headingMiddle}
+            <span className="grad">{HERO.headingGrad2}</span>
+          </h1>
+          <p>{HERO.paragraph}</p>
+          <div className="hero-actions">
+            <button type="button" className="btn btn-light" onClick={onSignup}>
+              {HERO.ctaPrimaryLabel} <span aria-hidden="true">→</span>
+            </button>
+            <a className="btn btn-ghost" href={HERO.ctaSecondaryHref}>
+              {HERO.ctaSecondaryLabel}
+            </a>
+          </div>
+          <ul className="hero-proofs" aria-label="Vantagens principais">
+            {HERO_PROOFS.map((proof) => <li key={proof}>{proof}</li>)}
+          </ul>
+        </div>
+
+        <aside className="hero-money-card" aria-label="Exemplo de comissão em um pedido de cem reais">
+          <div className="money-card-top">
+            <span>Exemplo de pedido</span>
+            <strong>R$ 100,00</strong>
+          </div>
+          <div className="money-divider" />
+          <div className="money-zero-row">
+            <div>
+              <span>Comissão do Confeitto</span>
+              <strong>R$ 0,00</strong>
+            </div>
+            <div className="zero-orbit"><span>0%</span></div>
+          </div>
+          <div className="money-result">
+            <span>O valor da sua venda</span>
+            <strong>continua sendo seu.</strong>
+          </div>
+          <p>Existe apenas R$ 0,50 fixo por pedido online pago, exibido separadamente ao cliente.</p>
+          <div className="money-seal"><span aria-hidden="true">✓</span> Sem surpresa no fechamento</div>
+        </aside>
+      </div>
+    </section>
+  )
+}
+
+function Comparison() {
+  const cards = [
+    { ...COMPARISON.apps, variant: 'apps', icon: '↓' },
+    { ...COMPARISON.confeitto, variant: 'confeitto', icon: '↑' },
+  ]
+
+  return (
+    <section id="comparativo" className="comparison-section">
+      <div className="container">
+        <div className="section-kicker reveal">{COMPARISON.eyebrow}</div>
+        <h2 className="reveal">{COMPARISON.title}</h2>
+        <p className="section-intro comparison-intro reveal">{COMPARISON.intro}</p>
+        <div className="comparison-grid">
+          {cards.map((card, index) => (
+            <article
+              className={`comparison-card comparison-${card.variant} reveal`}
+              style={{ '--reveal-delay': `${index * 110}ms` }}
+              key={card.label}
+            >
+              <div className="comparison-card-head">
+                <span className="comparison-icon" aria-hidden="true">{card.icon}</span>
+                <div>
+                  <span className="comparison-label">{card.label}</span>
+                  <h3>{card.badge}</h3>
+                </div>
+              </div>
+              <ul>
+                {card.items.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              <p className="comparison-footer">{card.footer}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -82,13 +172,13 @@ function Hero({ onSignup }) {
 
 function Ticker() {
   const items = [
-    'Venda Online',
-    'Venda Presencial',
+    '0% de comissão',
+    'Seu dinheiro na sua conta',
+    'Loja online própria',
     'PIX Automático',
-    'Gestão de Encomendas',
+    'Pedidos sem atravessador',
     'Controle de Estoque',
-    'Relatórios Financeiros',
-    'Loja com Sua Marca',
+    'Sua marca em primeiro lugar',
   ]
   const row = items.map((t, i) => (
     <span key={i}>
@@ -105,34 +195,6 @@ function Ticker() {
   )
 }
 
-function CountUp({ end, duration = 1200 }) {
-  const [val, setVal] = useState(0)
-  const ref = useRef(null)
-  const started = useRef(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el || started.current) return
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        started.current = true
-        io.unobserve(el)
-        const start = performance.now()
-        const step = (now) => {
-          const p = Math.min((now - start) / duration, 1)
-          setVal(Math.floor(p * end))
-          if (p < 1) requestAnimationFrame(step)
-        }
-        requestAnimationFrame(step)
-      }
-    }, { threshold: 0.3 })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [end, duration])
-
-  return <span ref={ref}>{val}</span>
-}
-
 function Stats() {
   const [data, setData] = useState(null)
   useEffect(() => {
@@ -144,28 +206,31 @@ function Stats() {
 
   if (!data) return null
 
-  const economiaBaixa = Math.round((data.faturamentoTotal * 0.152) / 1000)  // 12% + 3.2%
-  const economiaAlta  = Math.round((data.faturamentoTotal * 0.262) / 1000)  // 23% + 3.2%
+  // Exibimos ordens de grandeza, não o número exato do banco. Isso evita que
+  // o destaque social pareça um contador de precisão e também envelheça menos.
+  const pedidosMil = Math.max(1, Math.floor(data.totalPedidos / 1000))
+  const faturamentoMil = Math.max(1, Math.round(data.faturamentoTotal / 10000) * 10)
+  const economiaBaixa = Math.floor((data.faturamentoTotal * 0.152) / 10000) * 10  // 12% + 3.2%
+  const economiaAlta  = Math.ceil((data.faturamentoTotal * 0.262) / 10000) * 10  // 23% + 3.2%
 
   const items = [
-    { emoji: '🏪', valor: data.lojasAbertas, label: 'lojas abertas agora', raw: data.lojasAbertas },
-    { emoji: '📦', valor: data.totalPedidos, label: 'pedidos de todo tempo', raw: data.totalPedidos },
-    { emoji: '💰', valor: `R$ ${(data.faturamentoTotal/1000).toFixed(0)} mil`, label: 'faturamento total', raw: Math.round(data.faturamentoTotal/1000), prefix: 'R$ ', suffix: ' mil' },
-    { emoji: '💸', valor: `R$ ${economiaBaixa} a ${economiaAlta} mil`, label: 'economia vs apps (comissão + taxa)', raw: economiaBaixa, prefix: 'R$ ', suffix: ` a ${economiaAlta} mil` },
+    { emoji: '🏪', valor: `${data.lojasAbertas}+`, label: 'lojas ativas hoje' },
+    { emoji: '📦', valor: `${pedidosMil} mil+`, label: 'pedidos realizados' },
+    { emoji: '💰', valor: `R$ ${faturamentoMil} mil+`, label: 'faturamento movimentado' },
+    { emoji: '💸', valor: `R$ ${economiaBaixa}–${economiaAlta} mil`, label: 'economia estimada vs apps' },
   ]
 
   return (
     <section className="stats-section">
       <div className="container">
-        <h2 className="reveal">Números que <span className="highlight">falam por si</span></h2>
+        <div className="section-kicker reveal">Resultado de quem vende com estrutura própria</div>
+        <h2 className="reveal">Mais vendas. <span className="highlight">Menos dinheiro escapando.</span></h2>
         <div className="stats-grid">
           {items.map((item, i) => (
-            <div className="stat-card" key={i}>
+            <div className="stat-card reveal" style={{ '--reveal-delay': `${i * 70}ms` }} key={i}>
               <div className="stat-emoji">{item.emoji}</div>
               <div className="stat-value">
-                {item.prefix && <span>{item.prefix}</span>}
-                <CountUp end={item.raw} />
-                {item.suffix && <span>{item.suffix}</span>}
+                {item.valor}
               </div>
               <div className="stat-label">{item.label}</div>
             </div>
@@ -185,8 +250,8 @@ function Features() {
         </h2>
         <p className="section-intro reveal">{FEATURES_INTRO}</p>
         <div className="features-grid">
-          {FEATURES.map((f) => (
-            <div className="feature-card reveal" key={f.title}>
+          {FEATURES.map((f, index) => (
+            <div className="feature-card reveal" style={{ '--reveal-delay': `${index * 65}ms` }} key={f.title}>
               <div className="icon">{f.icon}</div>
               <h3>{f.title}</h3>
               <p>{f.text}</p>
@@ -207,7 +272,7 @@ function HowItWorks() {
         </h2>
         <div className="steps">
           {STEPS.map((s, i) => (
-            <div className="step reveal" key={s.title}>
+            <div className="step reveal" style={{ '--reveal-delay': `${i * 90}ms` }} key={s.title}>
               <div className="step-num">{i + 1}</div>
               <h3>{s.title}</h3>
               <p>{s.text}</p>
@@ -228,8 +293,12 @@ function usePlanoPadrao() {
 
   useEffect(() => {
     fetch(`${SIGNUP_API}/signup/plans`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`planos indisponíveis (${r.status})`)
+        return r.json()
+      })
       .then(plans => {
+        if (!Array.isArray(plans)) throw new Error('resposta de planos inválida')
         const chosen = plans.find(p => p.isDefault) || plans[0]
         if (!chosen) { setLoadError(true); return }
         setPlan(chosen)
@@ -241,42 +310,49 @@ function usePlanoPadrao() {
 }
 
 const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
+const valorPix = (plan) => Number(plan?.setupFee || 0) * (1 - Number(plan?.pixDiscountPercent || 0) / 100)
+const TEXTO_TAXA_PEDIDO = 'O Confeitto cobra 0% de comissão sobre o valor das vendas. Em pedidos online pagos, de entrega ou retirada, existe apenas uma taxa fixa de R$ 0,50, mostrada separadamente ao cliente no checkout. Balcão e mesa não pagam.'
 
-function Pricing({ onSignup }) {
-  const { plan, loadError } = usePlanoPadrao()
-
+function Pricing({ onSignup, plan, loadError }) {
   return (
     <section id="oferta" className="pricing">
       <div className="container">
+        <div className="section-kicker reveal">Previsível para você. Transparente para o cliente.</div>
         <h2 className="reveal">
-          Um plano só. <span className="highlight">Tudo incluso.</span>
+          Zero comissão. <span className="highlight">Um plano simples.</span>
         </h2>
         <div className="pricing-card reveal">
-          <div className="pricing-ribbon">🔥 Oferta de lançamento</div>
+          <div className="pricing-ribbon">0% de comissão sobre vendas</div>
           <div className="pricing-body">
             <div className="pricing-left">
               <div className="price-label">Implantação única</div>
               {plan ? (
                 <>
-                  <div className="price-now">
-                    <span className="currency">R$</span>{plan.setupFee.toFixed(0)}
-                  </div>
+                  <div className="price-now">{moeda(plan.setupFee)}</div>
+                  {plan.pixDiscountPercent > 0 && (
+                    <div className="price-pix">ou <strong>{moeda(valorPix(plan))}</strong> no PIX</div>
+                  )}
                   <div className="price-plus">+</div>
                   <div className="price-monthly">
-                    <strong>R$ {plan.monthlyFee.toFixed(0)}</strong>/mês
+                    <strong>{moeda(plan.monthlyFee)}</strong><span>/mês</span>
                   </div>
                 </>
               ) : (
                 <div className="price-now price-loading">{loadError ? '—' : 'Carregando...'}</div>
               )}
               <div className="price-note">Sem fidelidade. Cancele quando quiser.</div>
+              <div className="commission-zero">
+                <strong>0%</strong>
+                <span>do valor da sua venda fica com o Confeitto</span>
+              </div>
+              <p className="price-delivery-fee"><strong>Sem letra miúda:</strong> existe apenas R$ 0,50 fixo por pedido online pago. O valor aparece separado para o cliente no checkout. Balcão e mesa não pagam.</p>
             </div>
             <ul className="pricing-list">
               {PRICING_INCLUDES.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </div>
-          <button className="btn btn-primary btn-big" onClick={onSignup}>
-            Garantir minha oferta 🚀
+          <button type="button" className="btn btn-primary btn-big" onClick={onSignup}>
+            Parar de pagar comissão →
           </button>
         </div>
       </div>
@@ -299,8 +375,8 @@ function Stores() {
           Lojas que já <span className="highlight">confiam</span> na gente
         </h2>
         <div className="stores-grid">
-          {STORES.map((s) => (
-            <a href={s.url} target="_blank" rel="noopener noreferrer" className="store-preview reveal" key={s.name}>
+          {STORES.map((s, index) => (
+            <a href={s.url} target="_blank" rel="noopener noreferrer" className="store-preview reveal" style={{ '--reveal-delay': `${index * 70}ms` }} key={s.name}>
               <div className="emoji">{s.emoji}</div>
               <div className="name">{s.name}</div>
               <div className="url">{s.label}</div>
@@ -441,27 +517,27 @@ function Checkpoints() {
   )
 }
 
-function FinalCTA({ onSignup }) {
-  const { plan } = usePlanoPadrao()
+function FinalCTA({ onSignup, plan }) {
   const temDescontoPix = plan?.pixDiscountPercent > 0
 
   return (
     <section>
       <div className="container">
         <div className="cta-section reveal">
+          <div className="cta-kicker">Seu talento não precisa pagar pedágio</div>
           <h2>
-            Pronto pra <span className="grad">profissionalizar</span> sua confeitaria?
+            Não entregue seu lucro para <span className="grad">plataformas de delivery.</span>
           </h2>
           <p>
-            Crie sua loja agora e em minutos ela está no ar.
+            Tenha sua loja, sua marca e seus clientes. Venda com 0% de comissão e receba direto na sua conta.
             {plan && (
               <> Implantação de <strong>{moeda(plan.setupFee)}</strong>
                 {temDescontoPix && <> (ou <strong>{moeda(plan.setupFee * (1 - plan.pixDiscountPercent / 100))}</strong> no PIX)</>}
-                {' '}+ {moeda(plan.monthlyFee)}/mês.</>
+                {' '}+ {moeda(plan.monthlyFee)}/mês. {TEXTO_TAXA_PEDIDO}</>
             )}
           </p>
-          <button className="btn btn-light btn-big" onClick={onSignup}>
-            Quero minha loja 🚀
+          <button type="button" className="btn btn-light btn-big" onClick={onSignup}>
+            Quero ficar com minhas vendas →
           </button>
           <p className="signup-alt" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Prefere falar antes? <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>Chama no WhatsApp</a>
@@ -469,6 +545,15 @@ function FinalCTA({ onSignup }) {
         </div>
       </div>
     </section>
+  )
+}
+
+function MobileCTA({ onSignup }) {
+  return (
+    <div className="mobile-cta" aria-label="Ação rápida">
+      <div><strong>0% comissão</strong><span>sobre suas vendas</span></div>
+      <button type="button" onClick={onSignup}>Criar loja</button>
+    </div>
   )
 }
 
@@ -493,6 +578,7 @@ function Footer() {
 export default function App() {
   useReveal()
   useEffect(() => { trackFunnel('visit') }, [])
+  const { plan, loadError } = usePlanoPadrao()
   // O cadastro virou tela própria (/criar) em vez de modal: formulário longo
   // dentro de caixinha é o que fazia o fluxo parecer arrastado. Os CTAs viram
   // navegação de verdade — com URL, histórico e botão voltar funcionando.
@@ -515,18 +601,20 @@ export default function App() {
   return (
     <>
       <Header onSignup={openSignup} />
-      <main>
+      <main id="main-content">
         <Hero onSignup={openSignup} />
         <Ticker />
+        <Comparison />
         <Stats />
         <Features />
         <HowItWorks />
-        <Pricing onSignup={openSignup} />
+        <Pricing onSignup={openSignup} plan={plan} loadError={loadError} />
         <Stores />
         <Checkpoints />
-        <FinalCTA onSignup={openSignup} />
+        <FinalCTA onSignup={openSignup} plan={plan} />
       </main>
       <Footer />
+      <MobileCTA onSignup={openSignup} />
     </>
   )
 }

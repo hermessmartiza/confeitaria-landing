@@ -3,9 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Confeitto — Sistema completo para sua Confeitaria</title>
-  <meta name="description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Comece a vender em minutos." />
+  <title>Sistema para Confeitaria sem Comissão | Confeitto</title>
+  <meta name="description" content="Venda doces pelo seu próprio site com 0% de comissão. Loja online, PIX automático, PDV, encomendas, estoque e relatórios para confeitaria." />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+  <meta name="author" content="Confeitto by Smartiza" />
+  <meta name="theme-color" content="#4a1526" />
+  <meta name="color-scheme" content="light" />
   <link rel="canonical" href="https://confeitto.app/" />
+  <link rel="alternate" hreflang="pt-BR" href="https://confeitto.app/" />
+  <link rel="alternate" hreflang="x-default" href="https://confeitto.app/" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/svg+xml" href="/brand/icone.svg" />
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
@@ -24,30 +30,75 @@
   <!-- Open Graph / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://confeitto.app/" />
-  <meta property="og:title" content="Confeitto — Sistema completo para sua Confeitaria" />
-  <meta property="og:description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Comece a vender em minutos." />
+  <meta property="og:site_name" content="Confeitto" />
+  <meta property="og:title" content="Pare de entregar uma fatia de cada venda aos apps" />
+  <meta property="og:description" content="Sua loja online com 0% de comissão, PIX automático e gestão completa para confeitaria. Seu doce, sua marca e seu dinheiro." />
   <meta property="og:image" content="https://confeitto.app/brand/og-image.png" />
+  <meta property="og:image:secure_url" content="https://confeitto.app/brand/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:alt" content="Confeitto — sistema de vendas e gestão para confeitarias" />
   <meta property="og:locale" content="pt_BR" />
 
   <!-- Twitter/X Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Confeitto — Sistema completo para sua Confeitaria" />
-  <meta name="twitter:description" content="Sistema para gerenciamento de confeitaria: venda online e presencial, PIX automático, encomendas, estoque e relatórios. Comece a vender em minutos." />
+  <meta name="twitter:title" content="Sistema para confeitaria com 0% de comissão" />
+  <meta name="twitter:description" content="Venda no seu próprio site. Receba direto. Fique com o dinheiro do seu trabalho." />
   <meta name="twitter:image" content="https://confeitto.app/brand/og-image.png" />
+  <meta name="twitter:image:alt" content="Confeitto — sistema de vendas e gestão para confeitarias" />
 
-  <!-- SoftwareApplication foi removido daqui: o rich result exige offers +
-       aggregateRating, e o preço "ativo" hoje é só o plano de teste (não o
-       preço real de venda) — declarar isso pro Google seria informação
-       falsa. Reintroduzir quando o catálogo de planos estiver definitivo. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Confeitto",
-    "url": "https://confeitto.app/",
-    "logo": "https://confeitto.app/brand/apple-touch-icon.png"
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://confeitto.app/#organization",
+        "name": "Confeitto",
+        "url": "https://confeitto.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://confeitto.app/brand/icon-512.png",
+          "width": 512,
+          "height": 512
+        },
+        "parentOrganization": {
+          "@type": "Organization",
+          "name": "Smartiza",
+          "url": "https://smartiza.com.br/"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://confeitto.app/#website",
+        "url": "https://confeitto.app/",
+        "name": "Confeitto",
+        "inLanguage": "pt-BR",
+        "publisher": { "@id": "https://confeitto.app/#organization" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://confeitto.app/#software",
+        "name": "Confeitto",
+        "url": "https://confeitto.app/",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "Sistema de gestão para confeitarias",
+        "operatingSystem": "Web",
+        "inLanguage": "pt-BR",
+        "description": "Sistema para confeitaria com loja online sem comissão percentual, PIX automático, PDV, encomendas, estoque e relatórios.",
+        "featureList": [
+          "Loja online própria",
+          "Zero comissão percentual sobre vendas",
+          "PIX com confirmação automática",
+          "PDV para venda presencial",
+          "Gestão de encomendas",
+          "Controle de estoque",
+          "Relatórios financeiros"
+        ],
+        "publisher": { "@id": "https://confeitto.app/#organization" }
+      }
+    ]
   }
   </script>
 
@@ -55,7 +106,7 @@
   <link rel="preload" href="/brand/simbolo.svg" as="image" fetchpriority="high" />
 </head>
 <body>
-  <a href="#root" class="skip-link">Pular para o conteúdo</a>
+  <a href="#main-content" class="skip-link">Pular para o conteúdo</a>
   <!-- Conteúdo/links reais fora do React de propósito: a landing é uma SPA
        (conteúdo só existe depois do JS rodar), e ferramentas que não
        executam JavaScript — a maioria dos scanners de SEO e os crawlers de
@@ -64,7 +115,7 @@
        que o app hidrata, então não duplica nada pra quem tem JS. -->
   <noscript>
     <header style="padding:20px;font-family:system-ui,sans-serif;">
-      <strong>Confeitto</strong> — Sistema completo para sua confeitaria.
+      <strong>Confeitto</strong> — Sistema para confeitaria com loja online e 0% de comissão sobre vendas.
       <nav style="margin-top:10px;">
         <a href="/blog/">Blog</a> ·
         <a href="/faq">Perguntas frequentes</a> ·

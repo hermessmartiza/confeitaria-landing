@@ -42,32 +42,45 @@ function esc(str) {
 }
 
 /** Casca comum a toda página estática — mesma paleta/fonte da landing principal. */
-function layout({ title, description, canonicalPath, bodyHtml, articleMeta }) {
+function layout({ title, description, canonicalPath, bodyHtml, articleMeta, structuredData = [] }) {
   const canonical = `https://confeitto.app${canonicalPath}`
   const safeTitle = esc(title)
   const safeDescription = esc(description)
-  const articleSchema = articleMeta
-    ? `
-  <script type="application/ld+json">
-  ${JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: title,
-    description,
-    url: canonical,
-    datePublished: articleMeta.datePublished,
-    dateModified: articleMeta.datePublished,
-    image: 'https://confeitto.app/brand/og-image.png',
-    author: { '@type': 'Organization', name: 'Confeitto' },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Confeitto',
-      logo: { '@type': 'ImageObject', url: 'https://confeitto.app/brand/apple-touch-icon.png' },
+  const graph = [
+    {
+      '@type': 'WebPage',
+      '@id': `${canonical}#webpage`,
+      url: canonical,
+      name: `${title} — Confeitto`,
+      description,
+      inLanguage: 'pt-BR',
+      isPartOf: { '@id': 'https://confeitto.app/#website' },
     },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
-  })}
-  </script>`
-    : ''
+    ...(canonicalPath === '/' ? [] : [{
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Início', item: 'https://confeitto.app/' },
+        { '@type': 'ListItem', position: 2, name: title, item: canonical },
+      ],
+    }]),
+    ...(articleMeta ? [{
+      '@type': 'BlogPosting',
+      headline: title,
+      description,
+      url: canonical,
+      datePublished: articleMeta.datePublished,
+      dateModified: articleMeta.datePublished,
+      image: 'https://confeitto.app/brand/og-image.png',
+      author: { '@type': 'Organization', name: 'Confeitto', url: 'https://confeitto.app/' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Confeitto',
+        logo: { '@type': 'ImageObject', url: 'https://confeitto.app/brand/icon-512.png' },
+      },
+      mainEntityOfPage: { '@id': `${canonical}#webpage` },
+    }] : []),
+    ...structuredData,
+  ]
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -75,7 +88,11 @@ function layout({ title, description, canonicalPath, bodyHtml, articleMeta }) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeTitle} — Confeitto</title>
   <meta name="description" content="${safeDescription}" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+  <meta name="theme-color" content="#4a1526" />
   <link rel="canonical" href="${canonical}" />
+  <link rel="alternate" hreflang="pt-BR" href="${canonical}" />
+  <link rel="alternate" hreflang="x-default" href="${canonical}" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/svg+xml" href="/brand/icone.svg" />
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
@@ -84,12 +101,21 @@ function layout({ title, description, canonicalPath, bodyHtml, articleMeta }) {
 
   <meta property="og:type" content="${articleMeta ? 'article' : 'website'}" />
   <meta property="og:url" content="${canonical}" />
+  <meta property="og:site_name" content="Confeitto" />
   <meta property="og:title" content="${safeTitle} — Confeitto" />
   <meta property="og:description" content="${safeDescription}" />
   <meta property="og:image" content="https://confeitto.app/brand/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:alt" content="Confeitto — sistema de gestão para confeitarias" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
-  ${articleSchema}
+  <meta name="twitter:title" content="${safeTitle} — Confeitto" />
+  <meta name="twitter:description" content="${safeDescription}" />
+  <meta name="twitter:image" content="https://confeitto.app/brand/og-image.png" />
+  <meta name="twitter:image:alt" content="Confeitto — sistema de gestão para confeitarias" />
+  <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>
 
   <link rel="stylesheet" href="/landing-assets/fonts/outfit.css" />
   <link rel="stylesheet" href="/static-pages.css" />
@@ -167,6 +193,14 @@ write('faq.html', layout({
   title: 'Perguntas Frequentes',
   description: 'Tire suas dúvidas sobre o Confeitto: cadastro, pagamento, cancelamento e segurança dos dados.',
   canonicalPath: '/faq',
+  structuredData: [{
+    '@type': 'FAQPage',
+    mainEntity: FAQ_ITEMS.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }],
   bodyHtml: `
     <h1>Perguntas frequentes</h1>
     <div class="sp-faq">
@@ -265,14 +299,19 @@ write('sitemap.xml', sitemap)
 const manifest = JSON.stringify({
   name: 'Confeitto',
   short_name: 'Confeitto',
+  description: 'Sistema de vendas e gestão para confeitarias com loja online e 0% de comissão percentual.',
+  id: '/',
+  scope: '/',
   icons: [
     { src: '/brand/icon-192.png', sizes: '192x192', type: 'image/png' },
     { src: '/brand/icon-512.png', sizes: '512x512', type: 'image/png' },
   ],
-  theme_color: '#b84a5a',
+  theme_color: '#4a1526',
   background_color: '#faf9f7',
   display: 'standalone',
   start_url: '/',
+  lang: 'pt-BR',
+  categories: ['business', 'food', 'shopping'],
 }, null, 2)
 write('site.webmanifest', manifest)
 write('manifest.json', manifest)
@@ -281,11 +320,11 @@ write('manifest.json', manifest)
 // Markdown com H1 + links reais, seguindo a convenção llmstxt.org.
 const llmsTxt = `# Confeitto
 
-> Sistema completo de gestão para confeitarias: venda online e presencial, PIX automático, encomendas, estoque e relatórios financeiros.
+> Sistema de vendas e gestão para confeitarias com loja online própria, 0% de comissão percentual, PIX automático, PDV, encomendas, estoque e relatórios financeiros.
 
 ## Páginas principais
 
-- [Início](https://confeitto.app/): Apresentação do produto e planos
+- [Início](https://confeitto.app/): Loja online sem comissão percentual, recursos, comparação e planos
 - [Perguntas frequentes](https://confeitto.app/faq): Dúvidas sobre cadastro, pagamento e segurança
 - [Blog](https://confeitto.app/blog/): Conteúdo sobre gestão de confeitarias
 - [Termos de uso](https://confeitto.app/termos)

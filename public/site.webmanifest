@@ -1,6 +1,9 @@
 {
   "name": "Confeitto",
   "short_name": "Confeitto",
+  "description": "Sistema de vendas e gestão para confeitarias com loja online e 0% de comissão percentual.",
+  "id": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/brand/icon-192.png",
@@ -13,8 +16,14 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#b84a5a",
+  "theme_color": "#4a1526",
   "background_color": "#faf9f7",
   "display": "standalone",
-  "start_url": "/"
+  "start_url": "/",
+  "lang": "pt-BR",
+  "categories": [
+    "business",
+    "food",
+    "shopping"
+  ]
 }

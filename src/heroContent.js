@@ -3,20 +3,54 @@
 // injeta o mesmo markup estático em index.html antes do JS rodar) usam este
 // arquivo — evita o conteúdo divergir entre a versão crawlable e a real.
 export const HERO = {
-  badge: '✨ Lançamento especial — implantação com 40% OFF',
-  headingBefore: 'O sistema ',
-  headingGrad1: 'completo',
-  headingMiddle: ' para sua confeitaria ',
-  headingGrad2: 'vender mais',
+  badge: '0% de comissão sobre suas vendas',
+  eyebrow: 'Sua confeitaria não trabalha para aplicativo',
+  headingBefore: 'Pare de entregar ',
+  headingGrad1: 'uma fatia',
+  headingMiddle: ' de cada venda para ',
+  headingGrad2: 'apps de delivery',
   paragraph:
-    'Venda online e presencial, encomendas organizadas, estoque, PIX automático e relatórios — tudo em um só painel, com a cara da sua marca.',
-  ctaPrimaryLabel: 'Quero começar agora 🚀',
-  ctaSecondaryLabel: 'Ver oferta',
-  ctaSecondaryHref: '#oferta',
+    'Venda pelo seu próprio site, receba direto na sua conta e fique com o dinheiro do seu trabalho. Loja online, PIX automático, pedidos e gestão em um só lugar.',
+  ctaPrimaryLabel: 'Quero vender sem comissão',
+  ctaSecondaryLabel: 'Comparar custos',
+  ctaSecondaryHref: '#comparativo',
+}
+
+export const HERO_PROOFS = [
+  '0% de comissão',
+  'Dinheiro direto na sua conta',
+  'Sua marca e seus clientes',
+]
+
+export const COMPARISON = {
+  eyebrow: 'A conta que os aplicativos não colocam em destaque',
+  title: 'Quanto mais você vende, mais deveria sobrar para você.',
+  intro:
+    'Em plataformas que cobram percentual, cada pedido tira mais uma parte da sua margem. No Confeitto, o crescimento da sua confeitaria continua sendo seu.',
+  apps: {
+    label: 'Plataformas com comissão',
+    badge: 'Uma fatia de cada venda',
+    items: [
+      'Cobrança percentual sobre o valor do pedido',
+      'Seu custo aumenta justamente quando você vende mais',
+      'Sua marca disputa espaço com dezenas de concorrentes',
+    ],
+    footer: 'Você produz. Você entrega. A plataforma fica com uma parte.',
+  },
+  confeitto: {
+    label: 'Sua loja com Confeitto',
+    badge: '0% de comissão',
+    items: [
+      'R$ 0,00 de comissão sobre o valor das vendas',
+      'Apenas R$ 0,50 fixos por pedido online pago, separado para o cliente',
+      'Seu domínio, sua identidade e relacionamento direto com o cliente',
+    ],
+    footer: 'Você vende mais. O dinheiro do pedido continua com você.',
+  },
 }
 
 export const FEATURES_INTRO =
-  'Nenhum sistema genérico adaptado às pressas: cada parte do Confeitto foi pensada pro dia a dia da confeiteira que faz e vende doce — da produção até o pagamento cair na conta.'
+  'Chega de improvisar com caderno, planilha e conversa perdida. O Confeitto foi pensado para a rotina real de quem produz, vende e entrega doces todos os dias.'
 
 export const FEATURES = [
   {

@@ -1,10 +1,10 @@
 # Confeitto
 
-> Sistema completo de gestão para confeitarias: venda online e presencial, PIX automático, encomendas, estoque e relatórios financeiros.
+> Sistema de vendas e gestão para confeitarias com loja online própria, 0% de comissão percentual, PIX automático, PDV, encomendas, estoque e relatórios financeiros.
 
 ## Páginas principais
 
-- [Início](https://confeitto.app/): Apresentação do produto e planos
+- [Início](https://confeitto.app/): Loja online sem comissão percentual, recursos, comparação e planos
 - [Perguntas frequentes](https://confeitto.app/faq): Dúvidas sobre cadastro, pagamento e segurança
 - [Blog](https://confeitto.app/blog/): Conteúdo sobre gestão de confeitarias
 - [Termos de uso](https://confeitto.app/termos)
