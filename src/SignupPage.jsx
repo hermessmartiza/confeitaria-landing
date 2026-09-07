@@ -480,7 +480,7 @@ function EtapaPagamento({ dados, onVoltar }) {
                 ? 'A cobrança entra sozinha no cartão todo mês. Cancela quando quiser, pelo painel.'
                 : 'Todo mês mandamos um PIX. Se atrasar mais de 15 dias o acesso é bloqueado — mas nada é apagado.'}
             </p>
-            <p className="cad-nota"><strong>Taxa por pedido online:</strong> R$ 0,50 por pedido pago, de entrega ou retirada. Ela mantém o Confeitto.app sem comissão percentual sobre as vendas, é exibida separadamente para o cliente no checkout e somada à mensalidade. Só balcão e mesa não têm taxa.</p>
+            <p className="cad-nota"><strong>Sem taxa por pedido na sua operação:</strong> retirada, entrega própria, balcão e mesa pagam R$ 0,00 ao Confeitto por venda. Somente quando a loja usa a entrega Uber Direct, R$ 0,50 é incluído no valor do frete e repassado na mensalidade.</p>
           </div>
 
           {precisaCartao && (

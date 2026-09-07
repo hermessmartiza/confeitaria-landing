@@ -42,7 +42,7 @@ export const COMPARISON = {
     badge: '0% de comissão',
     items: [
       'R$ 0,00 de comissão sobre o valor das vendas',
-      'Apenas R$ 0,50 fixos por pedido online pago, separado para o cliente',
+      'R$ 0,00 por pedido em retirada, entrega própria, balcão e mesa',
       'Seu domínio, sua identidade e relacionamento direto com o cliente',
     ],
     footer: 'Você vende mais. O dinheiro do pedido continua com você.',

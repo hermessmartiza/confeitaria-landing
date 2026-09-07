@@ -124,7 +124,7 @@ function Hero({ onSignup }) {
             <span>O valor da sua venda</span>
             <strong>continua sendo seu.</strong>
           </div>
-          <p>Existe apenas R$ 0,50 fixo por pedido online pago, exibido separadamente ao cliente.</p>
+          <p>Retirada, entrega própria, balcão e mesa: R$ 0,00 de taxa do Confeitto por pedido.</p>
           <div className="money-seal"><span aria-hidden="true">✓</span> Sem surpresa no fechamento</div>
         </aside>
       </div>
@@ -311,7 +311,7 @@ function usePlanoPadrao() {
 
 const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
 const valorPix = (plan) => Number(plan?.setupFee || 0) * (1 - Number(plan?.pixDiscountPercent || 0) / 100)
-const TEXTO_TAXA_PEDIDO = 'O Confeitto cobra 0% de comissão sobre o valor das vendas. Em pedidos online pagos, de entrega ou retirada, existe apenas uma taxa fixa de R$ 0,50, mostrada separadamente ao cliente no checkout. Balcão e mesa não pagam.'
+const TEXTO_TAXA_PEDIDO = 'O Confeitto cobra 0% de comissão sobre o valor das vendas e R$ 0,00 por pedido em retirada, entrega própria, balcão e mesa. Somente na entrega Uber Direct, R$ 0,50 é incluído no frete.'
 
 function Pricing({ onSignup, plan, loadError }) {
   return (
@@ -345,7 +345,7 @@ function Pricing({ onSignup, plan, loadError }) {
                 <strong>0%</strong>
                 <span>do valor da sua venda fica com o Confeitto</span>
               </div>
-              <p className="price-delivery-fee"><strong>Sem letra miúda:</strong> existe apenas R$ 0,50 fixo por pedido online pago. O valor aparece separado para o cliente no checkout. Balcão e mesa não pagam.</p>
+              <p className="price-delivery-fee"><strong>Sem letra miúda:</strong> retirada, entrega própria, balcão e mesa não pagam taxa por pedido ao Confeitto. Somente na entrega Uber Direct, R$ 0,50 é incluído no valor do frete.</p>
             </div>
             <ul className="pricing-list">
               {PRICING_INCLUDES.map((item) => <li key={item}>{item}</li>)}
