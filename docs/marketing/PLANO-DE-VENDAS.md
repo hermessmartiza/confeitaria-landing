@@ -49,7 +49,7 @@ Reels, no perfil e na demonstração.
 | Prioridade | Funcionalidade | O que entrega | Benefício vendido |
 |---|---|---|---|
 | 1 | Loja online própria | Catálogo, fotos, adicionais, carrinho, checkout, domínio e identidade da confeitaria | “Pare de construir seu negócio dentro da marca dos outros.” |
-| 2 | 0% de comissão sobre a venda | O Confeitto não retém percentual do valor vendido; retirada, entrega própria, balcão e mesa também não têm taxa por pedido | “Quanto mais você vende, mais dinheiro continua sendo seu.” |
+| 2 | 0% de comissão sobre a venda | O Confeitto não retém percentual do valor vendido e não cobra taxa por pedido | “Quanto mais você vende, mais dinheiro continua sendo seu.” |
 | 3 | Pedidos em um só painel | Online, retirada, entrega, balcão/PDV e mesa/comanda | “Nenhum pedido perdido entre direct, WhatsApp e caderno.” |
 | 4 | PIX e pagamento com confirmação | Checkout online e atualização automática do pagamento nos provedores habilitados | “Pare de pedir comprovante e conferir pedido por pedido.” |
 | 5 | Encomendas e agenda produtiva | Datas, horários, capacidade, pré-vendas, cardápios especiais e encomendas personalizadas | “Saiba o que produzir, para quem e para quando.” |
@@ -123,8 +123,8 @@ homologação, contrato ou teste real de cada loja. Por isso:
 - mensalidade: R$ 50;
 - sem fidelidade;
 - 0% de comissão sobre o valor das vendas;
-- R$ 0,00 por pedido em retirada, entrega própria, balcão e mesa;
-- somente a entrega Uber Direct inclui R$ 0,50 no valor do frete.
+- R$ 0,00 de taxa do Confeitto por pedido, em todos os canais;
+- tarifas de pagamento e entrega seguem as condições dos fornecedores usados.
 
 Preços de anúncio, landing e checkout devem continuar vindo da API de planos.
 Nunca gravar o preço promocional diretamente em uma nova peça sem conferir o
@@ -167,11 +167,11 @@ Exemplo editorial, sem incluir mensalidade:
 | Comissão percentual do Confeitto | 0% | R$ 0,00 |
 
 No Confeitto continuam existindo a mensalidade, a tarifa do provedor de
-pagamento escolhido e o custo de entrega quando houver. Retirada, entrega
-própria, balcão e mesa não pagam taxa por pedido ao Confeitto; somente a entrega
-Uber Direct inclui R$ 0,50 no frete. A comparação não deve esconder essas
-diferenças. O marketplace também pode oferecer descoberta de público e
-logística, enquanto o Confeitto é o canal próprio da loja.
+pagamento escolhido e o custo de entrega quando houver. O Confeitto não cobra
+taxa por pedido enquanto a condição comercial atual estiver vigente. A
+comparação não deve esconder essas diferenças. O marketplace também pode
+oferecer descoberta de público e logística, enquanto o Confeitto é o canal
+próprio da loja.
 
 **Headline segura:** “Use o marketplace para ser descoberta. Use sua loja para
 não depender dele.”
@@ -256,7 +256,7 @@ R$ 26,20 conforme o plano comparado.
 **Virada, 10–18s:** “Na sua loja Confeitto, a comissão sobre a venda é 0%.”  
 **Prova, 18–25s:** mostrar checkout e pedido no painel.  
 **Rodapé:** “Mensalidade, provedor de pagamento e entrega têm regras próprias.
-Na Uber Direct, R$ 0,50 é incluído no frete. Consulte condições.”  
+O Confeitto não cobra taxa por pedido. Consulte condições.”
 **CTA:** “Comente MARGEM ou abra o link da bio.”
 
 ### Reel 2 — O pedido enterrado
@@ -466,8 +466,7 @@ responder apenas “funciona”: mostrar pedido, cobrança e confirmação.
 - 0% de comissão sobre o valor das vendas;
 - loja online própria, com a marca da confeitaria;
 - pedidos online e presenciais no mesmo painel;
-- R$ 0,00 por pedido em retirada, entrega própria, balcão e mesa;
-- R$ 0,50 incluído no frete somente em entrega Uber Direct;
+- R$ 0,00 de taxa do Confeitto por pedido, em todos os canais;
 - pagamento direto na conta configurada pela confeitaria, conforme o provedor;
 - funcionalidades que forem demonstradas em ambiente validado;
 - sem fidelidade, se os termos vigentes continuarem iguais.

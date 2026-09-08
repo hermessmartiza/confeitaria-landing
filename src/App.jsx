@@ -124,7 +124,7 @@ function Hero({ onSignup }) {
             <span>O valor da sua venda</span>
             <strong>continua sendo seu.</strong>
           </div>
-          <p>Retirada, entrega própria, balcão e mesa: R$ 0,00 de taxa do Confeitto por pedido.</p>
+          <p>R$ 0,00 de taxa do Confeitto por pedido, em todos os canais.</p>
           <div className="money-seal"><span aria-hidden="true">✓</span> Sem surpresa no fechamento</div>
         </aside>
       </div>
@@ -311,7 +311,7 @@ function usePlanoPadrao() {
 
 const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
 const valorPix = (plan) => Number(plan?.setupFee || 0) * (1 - Number(plan?.pixDiscountPercent || 0) / 100)
-const TEXTO_TAXA_PEDIDO = 'O Confeitto cobra 0% de comissão sobre o valor das vendas e R$ 0,00 por pedido em retirada, entrega própria, balcão e mesa. Somente na entrega Uber Direct, R$ 0,50 é incluído no frete.'
+const TEXTO_TAXA_PEDIDO = 'O Confeitto cobra 0% de comissão sobre o valor das vendas e R$ 0,00 de taxa por pedido. Tarifas do meio de pagamento e o frete escolhido são cobrados pelos respectivos fornecedores.'
 
 function Pricing({ onSignup, plan, loadError }) {
   return (
@@ -345,7 +345,7 @@ function Pricing({ onSignup, plan, loadError }) {
                 <strong>0%</strong>
                 <span>do valor da sua venda fica com o Confeitto</span>
               </div>
-              <p className="price-delivery-fee"><strong>Sem letra miúda:</strong> retirada, entrega própria, balcão e mesa não pagam taxa por pedido ao Confeitto. Somente na entrega Uber Direct, R$ 0,50 é incluído no valor do frete.</p>
+              <p className="price-delivery-fee"><strong>Sem letra miúda:</strong> o Confeitto não cobra taxa por pedido. Continuam existindo apenas as tarifas do meio de pagamento e do frete que a loja escolher.</p>
             </div>
             <ul className="pricing-list">
               {PRICING_INCLUDES.map((item) => <li key={item}>{item}</li>)}

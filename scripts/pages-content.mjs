@@ -26,11 +26,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Quanto custa?',
-    a: 'Uma taxa única de implantação e uma mensalidade fixa, nos valores exibidos no cadastro. O Confeitto cobra 0% de comissão sobre o valor das vendas. Retirada, entrega própria, balcão e mesa pagam R$ 0,00 por pedido ao Confeitto. Somente quando a loja usa entrega Uber Direct, R$ 0,50 é incluído no valor do frete e repassado na próxima mensalidade.',
+    a: 'Uma taxa única de implantação e uma mensalidade fixa, nos valores exibidos no cadastro. O Confeitto cobra 0% de comissão sobre o valor das vendas e R$ 0,00 de taxa por pedido. Tarifas do meio de pagamento e o frete escolhido são cobrados pelos respectivos fornecedores.',
   },
   {
     q: 'O Confeitto cobra comissão sobre minhas vendas?',
-    a: 'Não. O Confeitto fica com 0% do valor dos seus pedidos. O dinheiro da venda vai para a conta configurada pela sua confeitaria. Retirada, entrega própria, balcão e mesa também não têm taxa por pedido do Confeitto. Somente na entrega Uber Direct, R$ 0,50 é incluído no valor do frete.',
+    a: 'Não. O Confeitto fica com 0% do valor dos seus pedidos e não cobra taxa por pedido. O dinheiro da venda vai para a conta configurada pela sua confeitaria. Tarifas do meio de pagamento e do frete continuam sujeitas às condições dos fornecedores escolhidos.',
   },
   {
     q: 'Posso cancelar quando quiser?',
@@ -79,9 +79,9 @@ export const TERMOS_SECTIONS = [
     title: '3. Assinatura, cobrança e cancelamento',
     body: `O uso do Confeitto é pago através de uma taxa de implantação (cobrada uma única vez, no cadastro) e
     uma mensalidade recorrente, nos valores vigentes exibidos no momento da contratação. A mensalidade é cobrada
-    automaticamente no método de pagamento escolhido. O Confeitto cobra 0% de comissão sobre o valor das vendas.
-    Retirada, entrega própria, balcão e mesa não geram taxa por pedido do Confeitto. Somente quando a loja utiliza
-    a entrega Uber Direct, R$ 0,50 é incluído no valor do frete apresentado ao cliente e repassado na próxima mensalidade.
+    automaticamente no método de pagamento escolhido. O Confeitto cobra 0% de comissão sobre o valor das vendas
+    e, enquanto esta condição comercial estiver vigente, não cobra taxa por pedido. Tarifas do meio de pagamento
+    e do serviço de entrega escolhido permanecem sujeitas às condições dos respectivos fornecedores.
     Você pode cancelar a qualquer momento pelo próprio painel;
     o cancelamento interrompe cobranças futuras e sua loja permanece ativa até o fim do período já pago,
     sem reembolso proporcional do período em curso.`,

@@ -59,7 +59,7 @@ function prerenderHeroPlugin() {
           <div class="money-divider"></div>
           <div class="money-zero-row"><div><span>Comissão do Confeitto</span><strong>R$ 0,00</strong></div><div class="zero-orbit"><span>0%</span></div></div>
           <div class="money-result"><span>O valor da sua venda</span><strong>continua sendo seu.</strong></div>
-          <p>Retirada, entrega própria, balcão e mesa: R$ 0,00 de taxa do Confeitto por pedido.</p>
+          <p>R$ 0,00 de taxa do Confeitto por pedido, em todos os canais.</p>
           <div class="money-seal">✓ Sem surpresa no fechamento</div>
         </aside>
       </div>
