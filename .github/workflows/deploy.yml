@@ -1,0 +1,56 @@
+name: Publicar Confeitto
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Ambiente de destino
+        required: true
+        type: choice
+        options: [homolog, production]
+      ref:
+        description: SHA exato validado em homologação
+        required: true
+        type: string
+
+permissions:
+  contents: read
+concurrency:
+  group: confeitto-landing-${{ github.event_name == 'push' && 'homolog' || inputs.target }}
+  cancel-in-progress: false
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'push' && 'homolog' || inputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && github.sha || inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - id: release
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Enviar artefato e publicar
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_ENV: ${{ github.event_name == 'push' && 'homolog' || inputs.target }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          tar --exclude=.git --exclude=node_modules --exclude=dist -czf - . | \
+            ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "receive confeitaria-landing $DEPLOY_ENV $RELEASE_SHA"
+
