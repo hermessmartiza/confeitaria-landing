@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
 export const API = import.meta.env.VITE_API_URL || 'https://confeitaria.smartiza.com.br/api'
-const WHATSAPP = 'https://wa.me/554197601739'
 const GOOGLE_ADS_CONVERSION = 'AW-310946501/2SxkCIr-g_AcEMXVopQB'
 
 export const moeda = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
