@@ -12,7 +12,6 @@ import {
   PRICING_INCLUDES,
 } from './heroContent'
 
-const WHATSAPP = 'https://wa.me/554197601739'
 const API = 'https://confeitaria.smartiza.com.br/api'
 // Catálogo de planos (Fase 4/7) — precisa apontar pro backend do próprio
 // ambiente onde a landing está rodando (isolado ou produção), não sempre pra
@@ -52,6 +51,17 @@ function useReveal() {
       io.disconnect()
     }
   }, [])
+}
+
+function useConfiguredWhatsapp() {
+  const [number, setNumber] = useState(null)
+  useEffect(() => {
+    fetch(`${API}/platform/whatsapp/public-number`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => setNumber(data?.number || null))
+      .catch(() => {})
+  }, [])
+  return number
 }
 
 function Header({ onSignup }) {
@@ -517,7 +527,7 @@ function Checkpoints() {
   )
 }
 
-function FinalCTA({ onSignup, plan }) {
+function FinalCTA({ onSignup, plan, whatsappNumber }) {
   const temDescontoPix = plan?.pixDiscountPercent > 0
 
   return (
@@ -540,7 +550,7 @@ function FinalCTA({ onSignup, plan }) {
             Quero ficar com minhas vendas →
           </button>
           <p className="signup-alt" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Prefere falar antes? <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>Chama no WhatsApp</a>
+            {whatsappNumber && <>Prefere falar antes? <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline' }}>Chama no WhatsApp</a></>}
           </p>
         </div>
       </div>
@@ -579,6 +589,7 @@ export default function App() {
   useReveal()
   useEffect(() => { trackFunnel('visit') }, [])
   const { plan, loadError } = usePlanoPadrao()
+  const whatsappNumber = useConfiguredWhatsapp()
   // O cadastro virou tela própria (/criar) em vez de modal: formulário longo
   // dentro de caixinha é o que fazia o fluxo parecer arrastado. Os CTAs viram
   // navegação de verdade — com URL, histórico e botão voltar funcionando.
@@ -611,7 +622,7 @@ export default function App() {
         <Pricing onSignup={openSignup} plan={plan} loadError={loadError} />
         <Stores />
         <Checkpoints />
-        <FinalCTA onSignup={openSignup} plan={plan} />
+        <FinalCTA onSignup={openSignup} plan={plan} whatsappNumber={whatsappNumber} />
       </main>
       <Footer />
       <MobileCTA onSignup={openSignup} />
