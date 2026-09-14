@@ -12,8 +12,8 @@ export const HERO = {
   paragraph:
     'Venda pelo seu próprio site, receba direto na sua conta e fique com o dinheiro do seu trabalho. Loja online, PIX automático, pedidos e gestão em um só lugar.',
   ctaPrimaryLabel: 'Quero vender sem comissão',
-  ctaSecondaryLabel: 'Comparar custos',
-  ctaSecondaryHref: '#comparativo',
+  ctaSecondaryLabel: 'Calcular meu preço',
+  ctaSecondaryHref: '#calculadora',
 }
 
 export const HERO_PROOFS = [

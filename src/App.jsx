@@ -73,6 +73,7 @@ function Header({ onSignup }) {
           <span className="logo-text">Conf<span className="logo-ei">ei</span>tto</span>
         </a>
         <nav className="header-nav" aria-label="Navegação principal">
+          <a href="#calculadora">Calculadora grátis</a>
           <a href="#comparativo">Por que mudar</a>
           <a href="#recursos">Recursos</a>
           <a href="#oferta">Preço</a>
@@ -268,6 +269,86 @@ function Features() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  )
+}
+
+const CALCULATOR_DEFAULTS = {
+  recipeCost: '48',
+  portions: '12',
+  packaging: '1.50',
+  overhead: '10',
+  profit: '60',
+}
+
+const numberFrom = (value) => Math.max(0, Number.parseFloat(value) || 0)
+
+function ProductionCalculator({ onSignup }) {
+  const [values, setValues] = useState(CALCULATOR_DEFAULTS)
+  const recipeCost = numberFrom(values.recipeCost)
+  const portions = numberFrom(values.portions)
+  const packaging = numberFrom(values.packaging)
+  const overhead = numberFrom(values.overhead)
+  const profit = numberFrom(values.profit)
+  const canCalculate = portions > 0
+  const directCost = canCalculate ? recipeCost / portions + packaging : 0
+  const totalCost = directCost * (1 + overhead / 100)
+  const suggestedPrice = totalCost * (1 + profit / 100)
+  const unitProfit = suggestedPrice - totalCost
+  const update = (name) => (event) => setValues(current => ({ ...current, [name]: event.target.value }))
+
+  return (
+    <section id="calculadora" className="calculator-section">
+      <div className="container">
+        <div className="section-kicker reveal">Ferramenta gratuita para confeiteiras</div>
+        <h2 className="reveal">Seu preço não precisa ser <span className="highlight">um chute.</span></h2>
+        <p className="section-intro reveal">Descubra um preço de partida para cada unidade. Sem cadastro, sem email e sem planilha.</p>
+
+        <div className="calculator-shell reveal">
+          <div className="calculator-inputs">
+            <div className="calculator-heading">
+              <span aria-hidden="true">🧁</span>
+              <div><strong>Ficha rápida da receita</strong><p>Preencha só o que você sabe agora.</p></div>
+            </div>
+            <div className="calculator-fields">
+              <label>Custo total da receita <span>R$</span>
+                <input type="number" inputMode="decimal" min="0" step="0.01" value={values.recipeCost} onChange={update('recipeCost')} aria-describedby="recipe-cost-help" />
+                <small id="recipe-cost-help">Ingredientes da receita inteira.</small>
+              </label>
+              <label>Quantas unidades rende?
+                <input type="number" inputMode="numeric" min="1" step="1" value={values.portions} onChange={update('portions')} />
+                <small>Fatias, doces, potes ou bolos.</small>
+              </label>
+              <label>Embalagem por unidade <span>R$</span>
+                <input type="number" inputMode="decimal" min="0" step="0.01" value={values.packaging} onChange={update('packaging')} />
+              </label>
+              <label>Gás, energia e perdas <span>%</span>
+                <input type="number" inputMode="decimal" min="0" step="1" value={values.overhead} onChange={update('overhead')} />
+              </label>
+              <label className="calculator-field-wide">Lucro desejado sobre o custo <span>%</span>
+                <input type="number" inputMode="decimal" min="0" step="1" value={values.profit} onChange={update('profit')} />
+              </label>
+            </div>
+            <p className="calculator-privacy">A conta acontece nesta página. Seus valores não são enviados para a gente.</p>
+          </div>
+
+          <div className="calculator-result" aria-live="polite">
+            <div className="receipt-top"><span>ETIQUETA DE PREÇO</span><span>GRÁTIS</span></div>
+            {canCalculate ? (
+              <>
+                <div className="calculator-line"><span>Custo por unidade</span><strong>{moeda(totalCost)}</strong></div>
+                <div className="calculator-line"><span>Lucro por unidade</span><strong>{moeda(unitProfit)}</strong></div>
+                <div className="receipt-perforation" aria-hidden="true" />
+                <span className="result-label">Preço sugerido</span>
+                <strong className="result-price">{moeda(suggestedPrice)}</strong>
+                <p>por unidade, com {profit.toFixed(0)}% de lucro sobre o custo.</p>
+              </>
+            ) : <p className="calculator-empty">Informe o rendimento da receita para ver o preço sugerido.</p>}
+            <button type="button" className="calculator-cta" onClick={onSignup}>Quero salvar meus preços no Confeitto <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+        <p className="calculator-note">Este valor é um ponto de partida: revise taxas de pagamento, frete e impostos conforme a sua operação.</p>
       </div>
     </section>
   )
@@ -618,6 +699,7 @@ export default function App() {
         <Comparison />
         <Stats />
         <Features />
+        <ProductionCalculator onSignup={openSignup} />
         <HowItWorks />
         <Pricing onSignup={openSignup} plan={plan} loadError={loadError} />
         <Stores />
