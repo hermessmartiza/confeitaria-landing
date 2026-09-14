@@ -893,6 +893,15 @@ section h2 {
   box-shadow: 0 28px 65px rgba(74, 21, 38, .14);
 }
 
+.calculator-shell.calculator-advanced {
+  max-width: 1100px;
+  grid-template-columns: 1fr;
+}
+
+.calculator-advanced .calculator-result {
+  min-height: 300px;
+}
+
 .calculator-inputs {
   padding: 36px;
 }
@@ -925,6 +934,32 @@ section h2 {
 .calculator-note {
   color: var(--muted);
   font-size: .83rem;
+}
+
+.calculator-mode {
+  display: inline-flex;
+  gap: 3px;
+  margin: -6px 0 22px 60px;
+  padding: 3px;
+  border: 1px solid #e6d6d8;
+  border-radius: 9px;
+  background: #f8f1f0;
+}
+
+.calculator-mode button {
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: transparent;
+  color: #80666f;
+  font: 800 .72rem 'Outfit', sans-serif;
+  cursor: pointer;
+}
+
+.calculator-mode button[aria-pressed='true'] {
+  background: #fff;
+  color: var(--raspberry);
+  box-shadow: 0 1px 4px rgba(74, 21, 38, .12);
 }
 
 .calculator-fields {
@@ -975,6 +1010,138 @@ section h2 {
 
 .calculator-field-wide { grid-column: 1 / -1; }
 .calculator-privacy { margin-top: 22px; }
+
+.ingredient-calculator {
+  margin-top: 26px;
+  border-top: 1px solid #eadde0;
+  padding-top: 22px;
+}
+
+.ingredient-calculator-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.ingredient-calculator-head h3 {
+  color: var(--plum);
+  font-size: 1rem;
+}
+
+.ingredient-calculator-head p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: .75rem;
+  line-height: 1.35;
+}
+
+.ingredient-calculator-head > strong {
+  color: var(--rose);
+  font-size: .95rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ingredient-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ingredient-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(112px, 1.45fr) minmax(86px, .8fr) minmax(118px, 1fr) minmax(118px, 1fr) minmax(94px, .9fr) 24px;
+  gap: 8px;
+  align-items: end;
+  padding: 12px 10px;
+  border: 1px solid #eadde0;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.ingredient-row label {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  color: #78636c;
+  font-size: .64rem;
+  font-weight: 800;
+}
+
+.ingredient-row label > span {
+  position: absolute;
+  right: 8px;
+  bottom: 9px;
+  color: #9b818b;
+  font-size: .62rem;
+}
+
+.ingredient-row input,
+.ingredient-row select {
+  width: 100%;
+  min-width: 0;
+  height: 35px;
+  border: 1px solid #dfcfd2;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  font: 700 .78rem 'Outfit', sans-serif;
+}
+
+.ingredient-row input { padding: 7px 24px 7px 8px; }
+.ingredient-name input { padding-right: 8px; }
+
+.ingredient-measure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 4px;
+}
+
+.ingredient-measure input { padding-right: 6px; }
+.ingredient-measure select { padding: 0 3px; }
+
+.ingredient-cost {
+  min-height: 35px;
+  padding-bottom: 3px;
+  color: #78636c;
+  font-size: .64rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ingredient-cost span,
+.ingredient-cost strong { display: block; }
+.ingredient-cost strong { margin-top: 5px; color: var(--plum); font-size: .78rem; font-variant-numeric: tabular-nums; }
+
+.ingredient-remove {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 5px;
+  border: 0;
+  border-radius: 50%;
+  background: #f9ebed;
+  color: var(--rose);
+  font: 800 1.1rem/1 'Outfit', sans-serif;
+  cursor: pointer;
+}
+
+.ingredient-add {
+  margin-top: 11px;
+  border: 0;
+  background: transparent;
+  color: var(--raspberry);
+  font: 800 .78rem 'Outfit', sans-serif;
+  cursor: pointer;
+}
+
+.ingredient-warning {
+  margin-top: 10px;
+  color: #9e3d4b;
+  font-size: .75rem;
+  font-weight: 700;
+}
 
 .calculator-result {
   display: flex;
@@ -1551,6 +1718,11 @@ footer a {
     padding: 28px 24px;
   }
 
+  .ingredient-row {
+    grid-template-columns: minmax(130px, 1.4fr) minmax(90px, .85fr) minmax(118px, 1fr) minmax(118px, 1fr) minmax(94px, .8fr) 24px;
+    overflow-x: auto;
+  }
+
   .calculator-result {
     min-height: 360px;
     padding: 28px 24px;
@@ -1642,6 +1814,17 @@ footer a {
 
   .calculator-field-wide { grid-column: auto; }
   .calculator-section .container { padding-left: 16px; padding-right: 16px; }
+
+  .calculator-mode { margin-left: 0; }
+
+  .ingredient-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 12px;
+  }
+
+  .ingredient-name { grid-column: 1 / -1; }
+  .ingredient-cost { padding-top: 4px; }
+  .ingredient-remove { position: absolute; top: 9px; right: 9px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

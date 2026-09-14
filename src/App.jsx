@@ -283,10 +283,42 @@ const CALCULATOR_DEFAULTS = {
 }
 
 const numberFrom = (value) => Math.max(0, Number.parseFloat(value) || 0)
+const MEASURE_UNITS = [
+  { value: 'g', label: 'g', group: 'mass', factor: 1 },
+  { value: 'kg', label: 'kg', group: 'mass', factor: 1000 },
+  { value: 'ml', label: 'ml', group: 'volume', factor: 1 },
+  { value: 'l', label: 'L', group: 'volume', factor: 1000 },
+  { value: 'un', label: 'un.', group: 'unit', factor: 1 },
+]
+const DEFAULT_INGREDIENTS = [
+  { id: 'farinha', name: 'Farinha de trigo', packagePrice: '28', packageQuantity: '5', packageUnit: 'kg', usedQuantity: '350', usedUnit: 'g' },
+  { id: 'acucar', name: 'Açúcar', packagePrice: '6.50', packageQuantity: '1', packageUnit: 'kg', usedQuantity: '200', usedUnit: 'g' },
+  { id: 'ovos', name: 'Ovos', packagePrice: '24', packageQuantity: '30', packageUnit: 'un', usedQuantity: '4', usedUnit: 'un' },
+]
+
+function unit(value) {
+  return MEASURE_UNITS.find(item => item.value === value) || MEASURE_UNITS[0]
+}
+
+function costOfIngredient(ingredient) {
+  const packageUnit = unit(ingredient.packageUnit)
+  const usedUnit = unit(ingredient.usedUnit)
+  if (packageUnit.group !== usedUnit.group) return null
+  const packageAmount = numberFrom(ingredient.packageQuantity) * packageUnit.factor
+  const usedAmount = numberFrom(ingredient.usedQuantity) * usedUnit.factor
+  if (!packageAmount || !usedAmount) return 0
+  return numberFrom(ingredient.packagePrice) * usedAmount / packageAmount
+}
 
 function ProductionCalculator({ onSignup }) {
   const [values, setValues] = useState(CALCULATOR_DEFAULTS)
-  const recipeCost = numberFrom(values.recipeCost)
+  const [mode, setMode] = useState('quick')
+  const [ingredients, setIngredients] = useState(DEFAULT_INGREDIENTS)
+  const quickRecipeCost = numberFrom(values.recipeCost)
+  const ingredientCosts = ingredients.map(costOfIngredient)
+  const hasIncompatibleUnits = ingredientCosts.some(cost => cost === null)
+  const advancedRecipeCost = ingredientCosts.reduce((total, cost) => total + (cost || 0), 0)
+  const recipeCost = mode === 'advanced' ? advancedRecipeCost : quickRecipeCost
   const portions = numberFrom(values.portions)
   const packaging = numberFrom(values.packaging)
   const overhead = numberFrom(values.overhead)
@@ -297,6 +329,11 @@ function ProductionCalculator({ onSignup }) {
   const suggestedPrice = totalCost * (1 + profit / 100)
   const unitProfit = suggestedPrice - totalCost
   const update = (name) => (event) => setValues(current => ({ ...current, [name]: event.target.value }))
+  const updateIngredient = (id, name) => (event) => setIngredients(current => current.map(ingredient => ingredient.id === id ? { ...ingredient, [name]: event.target.value } : ingredient))
+  const addIngredient = () => setIngredients(current => [...current, {
+    id: `ingredient-${Date.now()}`, name: '', packagePrice: '', packageQuantity: '', packageUnit: 'g', usedQuantity: '', usedUnit: 'g',
+  }])
+  const removeIngredient = (id) => setIngredients(current => current.filter(ingredient => ingredient.id !== id))
 
   return (
     <section id="calculadora" className="calculator-section">
@@ -305,17 +342,21 @@ function ProductionCalculator({ onSignup }) {
         <h2 className="reveal">Seu preço não precisa ser <span className="highlight">um chute.</span></h2>
         <p className="section-intro reveal">Descubra um preço de partida para cada unidade. Sem cadastro, sem email e sem planilha.</p>
 
-        <div className="calculator-shell reveal">
+        <div className={`calculator-shell calculator-${mode}`}>
           <div className="calculator-inputs">
             <div className="calculator-heading">
               <span aria-hidden="true">🧁</span>
-              <div><strong>Ficha rápida da receita</strong><p>Preencha só o que você sabe agora.</p></div>
+              <div><strong>{mode === 'quick' ? 'Ficha rápida da receita' : 'Ficha detalhada da receita'}</strong><p>{mode === 'quick' ? 'Preencha só o que você sabe agora.' : 'Transforme cada compra no custo exato da receita.'}</p></div>
+            </div>
+            <div className="calculator-mode" aria-label="Modo da calculadora">
+              <button type="button" aria-pressed={mode === 'quick'} onClick={() => setMode('quick')}>Versão rápida</button>
+              <button type="button" aria-pressed={mode === 'advanced'} onClick={() => setMode('advanced')}>Versão avançada</button>
             </div>
             <div className="calculator-fields">
-              <label>Custo total da receita <span>R$</span>
+              {mode === 'quick' && <label>Custo total da receita <span>R$</span>
                 <input type="number" inputMode="decimal" min="0" step="0.01" value={values.recipeCost} onChange={update('recipeCost')} aria-describedby="recipe-cost-help" />
                 <small id="recipe-cost-help">Ingredientes da receita inteira.</small>
-              </label>
+              </label>}
               <label>Quantas unidades rende?
                 <input type="number" inputMode="numeric" min="1" step="1" value={values.portions} onChange={update('portions')} />
                 <small>Fatias, doces, potes ou bolos.</small>
@@ -330,6 +371,35 @@ function ProductionCalculator({ onSignup }) {
                 <input type="number" inputMode="decimal" min="0" step="1" value={values.profit} onChange={update('profit')} />
               </label>
             </div>
+            {mode === 'advanced' && <section className="ingredient-calculator" aria-labelledby="ingredients-title">
+              <div className="ingredient-calculator-head">
+                <div><h3 id="ingredients-title">Ingredientes da receita</h3><p>Quanto você pagou no pacote e quanto usa nesta receita.</p></div>
+                <strong>{moeda(advancedRecipeCost)}</strong>
+              </div>
+              <div className="ingredient-list">
+                {ingredients.map((ingredient, index) => {
+                  const ingredientCost = ingredientCosts[index]
+                  return <article className="ingredient-row" key={ingredient.id}>
+                    <label className="ingredient-name">Ingrediente
+                      <input value={ingredient.name} onChange={updateIngredient(ingredient.id, 'name')} placeholder="Ex.: cacau em pó" />
+                    </label>
+                    <label>Preço do pacote <span>R$</span>
+                      <input type="number" inputMode="decimal" min="0" step="0.01" value={ingredient.packagePrice} onChange={updateIngredient(ingredient.id, 'packagePrice')} />
+                    </label>
+                    <label>Pacote tem
+                      <div className="ingredient-measure"><input type="number" inputMode="decimal" min="0" step="0.01" value={ingredient.packageQuantity} onChange={updateIngredient(ingredient.id, 'packageQuantity')} /><select value={ingredient.packageUnit} onChange={updateIngredient(ingredient.id, 'packageUnit')} aria-label={`Unidade do pacote de ${ingredient.name || 'ingrediente'}`}>{MEASURE_UNITS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+                    </label>
+                    <label>Você usa
+                      <div className="ingredient-measure"><input type="number" inputMode="decimal" min="0" step="0.01" value={ingredient.usedQuantity} onChange={updateIngredient(ingredient.id, 'usedQuantity')} /><select value={ingredient.usedUnit} onChange={updateIngredient(ingredient.id, 'usedUnit')} aria-label={`Unidade usada de ${ingredient.name || 'ingrediente'}`}>{MEASURE_UNITS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+                    </label>
+                    <div className="ingredient-cost"><span>Custo na receita</span><strong>{ingredientCost === null ? 'Confira unidades' : moeda(ingredientCost)}</strong></div>
+                    {ingredients.length > 1 && <button type="button" className="ingredient-remove" onClick={() => removeIngredient(ingredient.id)} aria-label={`Remover ${ingredient.name || 'ingrediente'}`}>×</button>}
+                  </article>
+                })}
+              </div>
+              {hasIncompatibleUnits && <p className="ingredient-warning">Use unidades compatíveis no mesmo ingrediente: g e kg, ml e L ou unidades.</p>}
+              <button type="button" className="ingredient-add" onClick={addIngredient}>+ Adicionar ingrediente</button>
+            </section>}
             <p className="calculator-privacy">A conta acontece nesta página. Seus valores não são enviados para a gente.</p>
           </div>
 
